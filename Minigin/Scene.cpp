@@ -9,7 +9,14 @@ unsigned int Scene::m_idCounter = 0;
 
 Scene::Scene(const std::string& name) : m_name(name) {}
 
-Scene::~Scene() = default;
+Scene::~Scene()
+{
+	for (auto& gameObject : m_objects)
+	{
+		gameObject.reset();  // Releases the shared_ptr
+	}
+	m_objects.clear();
+};
 
 void Scene::Add(std::shared_ptr<GameObject> object)
 {
@@ -28,17 +35,18 @@ void Scene::RemoveAll()
 
 void Scene::Update()
 {
-	for(auto& object : m_objects)
+	for (const auto& object : m_objects)
 	{
 		object->Update();
 	}
 }
 
-void Scene::Render() const
+void dae::Scene::Render() const
 {
 	for (const auto& object : m_objects)
 	{
 		object->Render();
 	}
 }
+
 

@@ -4,11 +4,15 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <chrono>
+#include <execution>
+
 #include "Minigin.h"
 #include "InputManager.h"
 #include "SceneManager.h"
 #include "Renderer.h"
 #include "ResourceManager.h"
+#include "Time.h"
 
 SDL_Window* g_window{};
 
@@ -82,13 +86,55 @@ void dae::Minigin::Run(const std::function<void()>& load)
 	auto& renderer = Renderer::GetInstance();
 	auto& sceneManager = SceneManager::GetInstance();
 	auto& input = InputManager::GetInstance();
+	auto& time = Time::GetInstance();
 
 	// todo: this update loop could use some work.
-	bool doContinue = true;
-	while (doContinue)
-	{
-		doContinue = input.ProcessInput();
+
+    bool doContinue = true; // Quits Game
+	const double ms_per_frame = 16.67; // 60 FPS
+
+    while (doContinue)
+    {
+		time.Update(); // Update delta time
+
+        doContinue = input.ProcessInput();
+		
 		sceneManager.Update();
-		renderer.Render();
-	}
+        
+        renderer.Render();
+
+		const auto sleepTime = std::chrono::milliseconds(static_cast<int>(ms_per_frame)) -
+			std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - time.GetInstance().GetLastTime());
+
+		if (sleepTime.count() > 0)
+			std::this_thread::sleep_for(sleepTime);
+    }
 }
+
+// Update loop with fixed time step
+//----
+//bool doContinue = true; // Quits Game
+//auto lastTime = std::chrono::high_resolution_clock::now();
+//double lag = 0.0;
+//const double ms_per_frame = 16.67; // 60 FPS
+//
+//while (doContinue)
+//{
+//	const auto currentTime = std::chrono::high_resolution_clock::now();
+//	const std::chrono::duration<double> deltaTime = currentTime - lastTime;
+//	lastTime = currentTime;
+//	lag += deltaTime.count() * 1000.0; // Convert to milliseconds
+//
+//	doContinue = input.ProcessInput();
+//
+//	while (lag >= ms_per_frame) // Fixed time step for updating
+//	{
+//		sceneManager.Update();
+//		lag -= ms_per_frame;
+//	}
+//
+//	renderer.Render(); // Pass "lag / ms_per_second" for smooth motion if needed
+//
+//	const auto sleepTime = currentTime + std::chrono::milliseconds(static_cast<int>(ms_per_frame)) - std::chrono::high_resolution_clock::now();
+//	std::this_thread::sleep_for(sleepTime); // Clamping the frame rate to 60 fps
+//}

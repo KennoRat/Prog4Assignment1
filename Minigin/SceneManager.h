@@ -10,6 +10,15 @@ namespace dae
 	class SceneManager final : public Singleton<SceneManager>
 	{
 	public:
+		//Destructor
+		~SceneManager();
+
+		//Rule of 5
+		SceneManager(const SceneManager& other) = delete;
+		SceneManager(SceneManager&& other) = delete;
+		SceneManager& operator=(const SceneManager& other) = delete;
+		SceneManager& operator=(SceneManager&& other) = delete;
+
 		Scene& CreateScene(const std::string& name);
 
 		void Update();
