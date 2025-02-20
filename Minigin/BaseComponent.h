@@ -8,18 +8,23 @@ namespace dae
 	class BaseComponent // Base class for all components
 	{
 	public:
-		//Constructor
-		explicit BaseComponent(std::shared_ptr<GameObject> gameObject)
-			: m_gameObject(gameObject) {
-		};
 		//Destructor
 		virtual ~BaseComponent() = default;
+		//Rule Of Five
+		BaseComponent(const BaseComponent& other) = delete;
+		BaseComponent(BaseComponent&& other) = delete;
+		BaseComponent& operator=(const BaseComponent& other) = delete;
+		BaseComponent& operator=(BaseComponent&& other) = delete;
 
 		virtual void Update() = 0;
 		virtual void Render() const = 0;
 
+		GameObject* GetGameObject() const { return m_gameObjectPtr; }
 	protected:
-		std::weak_ptr<GameObject> m_gameObject;  // Prevents circular reference
+		//Constructor
+		explicit BaseComponent(GameObject& gameObject)
+			: m_gameObjectPtr(&gameObject) {};
+	private:
+		GameObject* m_gameObjectPtr;
 	};
-
 }

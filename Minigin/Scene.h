@@ -24,8 +24,11 @@ namespace dae
 	private: 
 		explicit Scene(const std::string& name);
 
+		void DeleteObject(GameObject* object);
+
 		std::string m_name;
 		std::vector < std::shared_ptr<GameObject>> m_objects{};
+		std::vector <GameObject*> m_objectsToBeDeleted{};
 
 		static unsigned int m_idCounter; 
 	};

@@ -25,7 +25,8 @@ void Scene::Add(std::shared_ptr<GameObject> object)
 
 void Scene::Remove(std::shared_ptr<GameObject> object)
 {
-	m_objects.erase(std::remove(m_objects.begin(), m_objects.end(), object), m_objects.end());
+	assert(object != nullptr);
+	m_objectsToBeDeleted.push_back(object.get());
 }
 
 void Scene::RemoveAll()
@@ -39,14 +40,35 @@ void Scene::Update()
 	{
 		object->Update();
 	}
+
+	if (m_objectsToBeDeleted.size() > 0)
+	{
+		for (const auto& object : m_objectsToBeDeleted)
+		{
+			DeleteObject(object);
+		}
+		m_objectsToBeDeleted.clear();
+	}
 }
 
-void dae::Scene::Render() const
+void Scene::Render() const
 {
 	for (const auto& object : m_objects)
 	{
 		object->Render();
 	}
 }
+
+void Scene::DeleteObject(GameObject* object)
+{
+	auto it = std::remove_if(m_objects.begin(), m_objects.end(),
+		[object](const std::shared_ptr<GameObject>& obj)
+		{
+			return obj.get() == object;
+		});
+
+	m_objects.erase(it, m_objects.end());
+}
+
 
 
