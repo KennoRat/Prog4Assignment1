@@ -26,7 +26,7 @@ void RenderComponent::Render() const
 		return;
 	}
 
-	const auto& pos = GetGameObject()->GetTransform().GetPosition();
+	const auto& pos = GetGameObject()->GetWorldPosition().GetPosition();
 	Renderer::GetInstance().RenderTexture(*m_texture, pos.x, pos.y);
 }
 	

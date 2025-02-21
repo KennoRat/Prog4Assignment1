@@ -40,7 +40,7 @@ void TextComponent::Update()
 
 void TextComponent::Render() const
 {
-	const auto& pos = GetGameObject()->GetTransform().GetPosition();
+	const auto& pos = GetGameObject()->GetWorldPosition().GetPosition();
 	Renderer::GetInstance().RenderTexture(*m_textTexture, pos.x, pos.y);
 }
 

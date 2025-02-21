@@ -61,13 +61,24 @@ void Scene::Render() const
 
 void Scene::DeleteObject(GameObject* object)
 {
+	if (object == nullptr) return;
+
+	auto children = object->GetChildren();
+	for(auto* child : children)
+	{
+		DeleteObject(child);
+	}
+
 	auto it = std::remove_if(m_objects.begin(), m_objects.end(),
 		[object](const std::shared_ptr<GameObject>& obj)
 		{
 			return obj.get() == object;
 		});
 
-	m_objects.erase(it, m_objects.end());
+	if (it != m_objects.end())
+	{
+		m_objects.erase(it, m_objects.end());
+	}
 }
 
 

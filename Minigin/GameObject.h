@@ -21,31 +21,47 @@ namespace dae
 		~GameObject() = default;
 
 		//Rule Of Five
-		GameObject(const GameObject& other) = default;
-		GameObject(GameObject&& other) = default;
-		GameObject& operator=(const GameObject& other) = default;
-		GameObject& operator=(GameObject&& other) = default;
+		GameObject(const GameObject& other) = delete;
+		GameObject(GameObject&& other) = delete;
+		GameObject& operator=(const GameObject& other) = delete;
+		GameObject& operator=(GameObject&& other) = delete;
 
 		void Update();
 		void Render() const;
 
-		void SetPosition(float x, float y);
 		void AddComponent(std::unique_ptr<BaseComponent> component);
+		void SetLocalPosition(const Transform& Position);
+		void SetLocalPosition(float x, float y, float z = 0.f);
+		void SetParent(GameObject* parent, bool keepWorldPosition);
+
+		int GetChildCount() const;
+		Transform GetWorldPosition();
+		GameObject* GetParent() const;
+		GameObject* GetChildAt(int index) const;
+		std::vector<GameObject*> GetChildren() const;
+
 		template <typename GC>
 		GC* GetComponent() const;
 		template <typename RC>
 		void RemoveComponent();
 		template <typename CC>
 		bool CheckComponent() const;
-		Transform GetTransform() const;
 
 	private:
 		//Methods
 		void DeleteComponent(BaseComponent* component);
+		void UpdateWorldPosition();
+		void SetPositionDirty();
+		void RemoveChild(GameObject* child);
+		void AddChild(GameObject* child);
+		bool IsChild(GameObject* child) const;
 
 		//Data
-
-		Transform m_transform{};
+		bool m_positionIsDirty{ true };
+		Transform m_worldPosition{};
+		Transform m_localPosition{};
+		GameObject* m_parent{ nullptr };
+		std::vector<GameObject*> m_children;
 
 		std::vector<std::unique_ptr<BaseComponent>> m_components;
 		std::vector<BaseComponent*> m_componentsToBeDeleted;
