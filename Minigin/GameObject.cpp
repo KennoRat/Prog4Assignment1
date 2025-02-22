@@ -9,7 +9,10 @@ void GameObject::Update()
 	{
 		component->Update();
 	}
+}
 
+void GameObject::LateUpdate()
+{
 	if (m_componentsToBeDeleted.size() > 0)
 	{
 		for (auto& component : m_componentsToBeDeleted)
@@ -139,7 +142,7 @@ int GameObject::GetChildCount() const
 
 GameObject* GameObject::GetChildAt(int index) const
 {
-	if (index < m_children.size())
+	if (index < static_cast<int>(m_children.size()))
 	{
 		return m_children[index];
 	}

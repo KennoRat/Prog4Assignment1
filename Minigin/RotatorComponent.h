@@ -31,6 +31,6 @@ namespace dae
 		float m_angle{0.f};
 		float m_speed;
 		float m_radius;
-		Transform m_worldPosition;
+		Transform m_worldPosition{};
 	};
 }

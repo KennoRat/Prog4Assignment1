@@ -27,6 +27,7 @@ namespace dae
 		GameObject& operator=(GameObject&& other) = delete;
 
 		void Update();
+		void LateUpdate();
 		void Render() const;
 
 		void AddComponent(std::unique_ptr<BaseComponent> component);

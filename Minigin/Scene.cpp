@@ -40,6 +40,14 @@ void Scene::Update()
 	{
 		object->Update();
 	}
+}
+
+void Scene::LateUpdate()
+{
+	for (const auto& object : m_objects)
+	{
+		object->LateUpdate();
+	}
 
 	if (m_objectsToBeDeleted.size() > 0)
 	{
@@ -68,6 +76,8 @@ void Scene::DeleteObject(GameObject* object)
 	{
 		DeleteObject(child);
 	}
+
+	object->SetParent(nullptr , false); //Removes itself as child from a parent
 
 	auto it = std::remove_if(m_objects.begin(), m_objects.end(),
 		[object](const std::shared_ptr<GameObject>& obj)

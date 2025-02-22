@@ -98,6 +98,7 @@ void dae::Minigin::Run(const std::function<void()>& load)
         doContinue = input.ProcessInput();
 		
 		sceneManager.Update();
+		sceneManager.LateUpdate();
         
         renderer.Render();
 

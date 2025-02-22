@@ -16,6 +16,14 @@ void SceneManager::Update()
 	}
 }
 
+void SceneManager::LateUpdate()
+{
+	for (auto& scene : m_scenes)
+	{
+		scene->LateUpdate();
+	}
+}
+
 void SceneManager::Render()
 {
 	for (const auto& scene : m_scenes)
@@ -23,8 +31,6 @@ void SceneManager::Render()
 		scene->Render();
 	}
 }
-
-
 
 Scene& SceneManager::CreateScene(const std::string& name)
 {
