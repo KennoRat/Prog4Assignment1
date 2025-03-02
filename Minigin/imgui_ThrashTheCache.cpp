@@ -1,5 +1,11 @@
 #include "imgui_ThrashTheCache.h"
 
+ImGui::imgui_ThrashTheCache::~imgui_ThrashTheCache()
+{
+    delete[] m_samplesInt;
+    delete[] m_samplesGameObject3D;
+}
+
 void ImGui::imgui_ThrashTheCache::MeasureAndPlotInts()
 {
     ImGui::Begin("Exercise 1 (Ints)", nullptr, ImGuiWindowFlags_AlwaysAutoResize);

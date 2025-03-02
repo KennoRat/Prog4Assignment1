@@ -33,15 +33,23 @@ namespace ImGui
         int id{};
     };
 
-	class imgui_ThrashTheCache
+	class imgui_ThrashTheCache final
 	{
 	public:
+        imgui_ThrashTheCache() = default;
+        //Destructor
+        ~imgui_ThrashTheCache();
 
         //Window
         void MeasureAndPlotInts();
         void MeasureAndPlotGameObjects();
 
     private:
+        //Rule of 5
+        imgui_ThrashTheCache(const imgui_ThrashTheCache& other) = delete;
+        imgui_ThrashTheCache(imgui_ThrashTheCache&& other) = delete;
+        imgui_ThrashTheCache& operator=(const imgui_ThrashTheCache& other) = delete;
+        imgui_ThrashTheCache& operator=(imgui_ThrashTheCache&& other) = delete;
 
         //Get data
         void MeasureInts(int samplesSize);
