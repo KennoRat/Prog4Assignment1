@@ -1,31 +1,23 @@
 #pragma once
+#include "Singleton.h"
 #include <chrono>
 
 namespace dae
 {
-	class Time final
+	class Time final: public Singleton<Time>
 	{
 	public:
-		static Time& GetInstance();
-
 		void Update();
 
 		double GetDeltaTime() const { return m_deltaTime; }
 		std::chrono::high_resolution_clock::time_point GetLastTime() const { return m_lastTime; }
 
 	private:
+		friend class Singleton<Time>;
 		//Constructor
-		Time();
+		Time() = default;
 
-		~Time() = default;
-
-		// Rule Of Five
-		Time(const Time&) = delete;
-		Time(Time&&) = delete;
-		Time& operator=(const Time&) = delete;
-		Time& operator=(Time&&) = delete;
-
-		double m_deltaTime;
-		std::chrono::high_resolution_clock::time_point m_lastTime;
+		double m_deltaTime{};
+		std::chrono::high_resolution_clock::time_point m_lastTime{ std::chrono::high_resolution_clock::now() };
 	};
 }

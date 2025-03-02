@@ -13,7 +13,6 @@ namespace dae
 	public:
 		//Constructor
 		RotatorComponent(float speed, float radius, std::shared_ptr<GameObject> gameObject);
-		RotatorComponent(float speed, float radius, bool rotateAtWorldPosition, std::shared_ptr<GameObject> gameObject);
 
 		//Destructor
 		virtual ~RotatorComponent() override = default;
@@ -31,6 +30,5 @@ namespace dae
 		float m_angle{0.f};
 		float m_speed;
 		float m_radius;
-		Transform m_worldPosition{};
 	};
 }

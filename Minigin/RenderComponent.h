@@ -13,6 +13,7 @@ namespace dae
 	public:
 		//Constructor
 		RenderComponent(std::shared_ptr<GameObject> gameObject);
+		RenderComponent(std::shared_ptr<GameObject> gameObject, float width, float height);
 
 		//Destructor
 		virtual ~RenderComponent() override;
@@ -30,6 +31,8 @@ namespace dae
 
 	private:
 
+		float m_width{};
+		float m_height{};
 		std::shared_ptr<Texture2D> m_texture{ nullptr };
 	};
 }

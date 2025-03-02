@@ -15,7 +15,7 @@ namespace dae
 	public:
 		
 		//Constructor
-		TextComponent(const std::string& text, std::shared_ptr<Font> font, std::shared_ptr<GameObject> gameObject);
+		TextComponent(std::shared_ptr<GameObject> gameObject, const std::string& text, std::shared_ptr<Font> font);
 
 		//Destructor
 		virtual ~TextComponent() override;

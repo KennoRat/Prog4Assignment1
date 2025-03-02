@@ -7,9 +7,10 @@
 
 using namespace dae;
 
-TextComponent::TextComponent(const std::string& text, std::shared_ptr<Font> font, std::shared_ptr<GameObject> gameObject) 
+TextComponent::TextComponent(std::shared_ptr<GameObject> gameObject, const std::string& text, std::shared_ptr<Font> font)
 	:BaseComponent(*gameObject.get()), m_needsUpdate(true), m_text(text), m_font(std::move(font)), m_textTexture(nullptr)
-{}
+{
+}
 
 TextComponent::~TextComponent()
 {
