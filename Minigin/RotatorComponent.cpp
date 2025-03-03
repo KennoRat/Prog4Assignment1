@@ -24,3 +24,8 @@ void RotatorComponent::Render() const
 {
 	//nothing to render
 }
+
+void RotatorComponent::RenderImGui()
+{
+	//Do nothing
+}

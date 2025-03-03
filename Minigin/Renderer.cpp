@@ -5,7 +5,6 @@
 #include "imgui.h"
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_opengl3.h"
-#include "imgui_ThrashTheCache.h"
 
 int GetOpenGLDriverIndex()
 {
@@ -52,9 +51,7 @@ void dae::Renderer::Render() const
 	ImGui::NewFrame();
 
 	//ImGui::ShowDemoWindow();
-	static ImGui::imgui_ThrashTheCache thrashTheCache;
-	thrashTheCache.MeasureAndPlotInts();
-	thrashTheCache.MeasureAndPlotGameObjects();
+	SceneManager::GetInstance().RenderImGui();
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

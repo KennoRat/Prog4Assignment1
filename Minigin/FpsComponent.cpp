@@ -24,3 +24,8 @@ void FpsComponent::Render() const
 {
 	m_textComponent->Render(); //don't call render in render
 }
+
+void FpsComponent::RenderImGui()
+{
+	//Do nothing
+}

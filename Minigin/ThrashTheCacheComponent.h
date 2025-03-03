@@ -4,10 +4,12 @@
 #include <algorithm>
 
 #include "imgui_plot.h"
+#include "BaseComponent.h"
 
-
-namespace ImGui
+namespace dae
 {
+	class GameObject;
+
     struct transform
     {
         float matrix[16] =
@@ -33,23 +35,29 @@ namespace ImGui
         int id{};
     };
 
-	class imgui_ThrashTheCache final
+	class ThrashTheCacheComponent final : public BaseComponent
 	{
 	public:
-        imgui_ThrashTheCache() = default;
-        //Destructor
-        ~imgui_ThrashTheCache();
+		//Constructor
+		ThrashTheCacheComponent(std::shared_ptr<GameObject> gameObject);
 
+		//Destructor
+        virtual ~ThrashTheCacheComponent() override;
+
+		//Rule of 5
+		ThrashTheCacheComponent(const ThrashTheCacheComponent& other) = delete;
+		ThrashTheCacheComponent(ThrashTheCacheComponent&& other) = delete;
+		ThrashTheCacheComponent& operator=(const ThrashTheCacheComponent& other) = delete;
+		ThrashTheCacheComponent& operator=(ThrashTheCacheComponent&& other) = delete;
+
+		virtual void Update() override;
+		virtual void Render() const override;
+		virtual void RenderImGui() override;
+
+    private:
         //Window
         void MeasureAndPlotInts();
         void MeasureAndPlotGameObjects();
-
-    private:
-        //Rule of 5
-        imgui_ThrashTheCache(const imgui_ThrashTheCache& other) = delete;
-        imgui_ThrashTheCache(imgui_ThrashTheCache&& other) = delete;
-        imgui_ThrashTheCache& operator=(const imgui_ThrashTheCache& other) = delete;
-        imgui_ThrashTheCache& operator=(imgui_ThrashTheCache&& other) = delete;
 
         //Get data
         void MeasureInts(int samplesSize);
@@ -65,7 +73,7 @@ namespace ImGui
         bool m_measurementDoneGameObject3D{ false };
         bool m_measurementDoneGameObject3DAlt{ false };
         const int DATA_SIZE{ 5'000'000 };
-        int* m_samplesInt{new int (10)};
+        int* m_samplesInt{ new int(10) };
         int* m_samplesGameObject3D{ new int(100) };
         float m_averageTimeDataInts[11]{};
         float m_averageTimeDataGameObjects[11]{};
@@ -73,5 +81,3 @@ namespace ImGui
         float m_stepSizes[11]{};
 	};
 }
-
-

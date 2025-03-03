@@ -29,6 +29,7 @@ namespace dae
 		void Update();
 		void LateUpdate();
 		void Render() const;
+		void RenderImGui();
 
 		void AddComponent(std::unique_ptr<BaseComponent> component);
 		void SetLocalPosition(const Transform& Position);

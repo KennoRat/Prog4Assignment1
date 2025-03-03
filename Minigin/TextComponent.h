@@ -28,6 +28,7 @@ namespace dae
 
 		virtual void Update() override;
 		virtual void Render() const override;
+		virtual void RenderImGui() override;
 
 		virtual void SetText(const std::string& text);
 	private:

@@ -34,6 +34,11 @@ void RenderComponent::Render() const
 	const auto& pos = GetGameObject()->GetWorldPosition().GetPosition();
 	Renderer::GetInstance().RenderTexture(*m_texture, pos.x, pos.y, m_width, m_height);
 }
+
+void RenderComponent::RenderImGui()
+{
+	//Do nothing
+}
 	
 void RenderComponent::SetTexture(const std::string& filename)
 {

@@ -23,6 +23,7 @@ namespace dae
 
 		virtual void Update() override;
 		virtual void Render() const override;
+		virtual void RenderImGui() override;
 
 	private:
 		//TextComponent* m_textComponent;

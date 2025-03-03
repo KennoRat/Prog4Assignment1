@@ -45,6 +45,11 @@ void TextComponent::Render() const
 	Renderer::GetInstance().RenderTexture(*m_textTexture, pos.x, pos.y);
 }
 
+void TextComponent::RenderImGui()
+{
+	// Do nothing
+}
+
 // This implementation uses the "dirty flag" pattern
 void TextComponent::SetText(const std::string& text)
 {

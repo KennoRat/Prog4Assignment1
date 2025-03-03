@@ -1,12 +1,35 @@
-#include "imgui_ThrashTheCache.h"
+#include "ThrashTheCacheComponent.h"
 
-ImGui::imgui_ThrashTheCache::~imgui_ThrashTheCache()
+using namespace dae;
+
+ThrashTheCacheComponent::ThrashTheCacheComponent(std::shared_ptr<GameObject> gameObject)
+	:BaseComponent(*gameObject.get())
+{
+}
+
+ThrashTheCacheComponent::~ThrashTheCacheComponent()
 {
     delete[] m_samplesInt;
     delete[] m_samplesGameObject3D;
 }
 
-void ImGui::imgui_ThrashTheCache::MeasureAndPlotInts()
+void ThrashTheCacheComponent::Update()
+{
+    //Do nothing
+}
+
+void ThrashTheCacheComponent::Render() const
+{
+    //Do nothing
+}
+
+void ThrashTheCacheComponent::RenderImGui()
+{
+    MeasureAndPlotInts();
+    MeasureAndPlotGameObjects();
+}
+
+void ThrashTheCacheComponent::MeasureAndPlotInts()
 {
     ImGui::Begin("Exercise 1 (Ints)", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
@@ -27,7 +50,7 @@ void ImGui::imgui_ThrashTheCache::MeasureAndPlotInts()
     ImGui::End();
 }
 
-void ImGui::imgui_ThrashTheCache::MeasureAndPlotGameObjects()
+void ThrashTheCacheComponent::MeasureAndPlotGameObjects()
 {
     ImGui::Begin("Exercise 2 (GameObjects)", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
@@ -58,7 +81,7 @@ void ImGui::imgui_ThrashTheCache::MeasureAndPlotGameObjects()
         DrawPlot(m_averageTimeDataGameObjectsAlt, m_stepSizes, 2, ImColor(150, 150, 250));
     }
 
-    if(m_measurementDoneGameObject3D && m_measurementDoneGameObject3DAlt)
+    if (m_measurementDoneGameObject3D && m_measurementDoneGameObject3DAlt)
     {
         ImGui::Separator();
         ImGui::Text("Combined: ");
@@ -69,7 +92,7 @@ void ImGui::imgui_ThrashTheCache::MeasureAndPlotGameObjects()
 }
 
 
-void ImGui::imgui_ThrashTheCache::MeasureInts(int samplesSize)
+void ThrashTheCacheComponent::MeasureInts(int samplesSize)
 {
     std::vector<int> vectorInts(DATA_SIZE, 1);
     int index{};
@@ -98,7 +121,7 @@ void ImGui::imgui_ThrashTheCache::MeasureInts(int samplesSize)
     }
 }
 
-void ImGui::imgui_ThrashTheCache::MeasureGameObjects(int samplesSize)
+void ThrashTheCacheComponent::MeasureGameObjects(int samplesSize)
 {
     std::vector<GameObject3D> vectorGameObject(DATA_SIZE);
     int index{};
@@ -127,7 +150,7 @@ void ImGui::imgui_ThrashTheCache::MeasureGameObjects(int samplesSize)
     }
 }
 
-void ImGui::imgui_ThrashTheCache::MeasureGameObjectsAlt(int samplesSize)
+void ThrashTheCacheComponent::MeasureGameObjectsAlt(int samplesSize)
 {
     std::vector<GameObject3DAlt> vectorGameObjectAlt(DATA_SIZE);
     int index{};
@@ -156,7 +179,7 @@ void ImGui::imgui_ThrashTheCache::MeasureGameObjectsAlt(int samplesSize)
     }
 }
 
-float ImGui::imgui_ThrashTheCache::GetAverageTime(std::vector<long long> timings)
+float ThrashTheCacheComponent::GetAverageTime(std::vector<long long> timings)
 {
     // Remove highest and lowest value
     std::sort(timings.begin(), timings.end());
@@ -172,7 +195,7 @@ float ImGui::imgui_ThrashTheCache::GetAverageTime(std::vector<long long> timings
     return static_cast<float>(averageTime);
 }
 
-void ImGui::imgui_ThrashTheCache::DrawPlot(float averageTime[11], float stepSizes[11], int idNumber, ImColor color)
+void ThrashTheCacheComponent::DrawPlot(float averageTime[11], float stepSizes[11], int idNumber, ImColor color)
 {
     const int stepAmount{ 11 };
 
@@ -200,7 +223,7 @@ void ImGui::imgui_ThrashTheCache::DrawPlot(float averageTime[11], float stepSize
     ImGui::Plot("Cache Thrashing Performance##" + idNumber, conf);
 }
 
-void ImGui::imgui_ThrashTheCache::DrawCombinedPlot(float averageTime[11], float averageTime2[11], float stepSizes[11])
+void ThrashTheCacheComponent::DrawCombinedPlot(float averageTime[11], float averageTime2[11], float stepSizes[11])
 {
     const float* y_data[] = { averageTime , averageTime2 };
     ImU32 colors[2] = { ImColor(0, 255, 0), ImColor(150, 150, 250) };
@@ -242,4 +265,3 @@ void ImGui::imgui_ThrashTheCache::DrawCombinedPlot(float averageTime[11], float 
     // Draw the plot
     ImGui::Plot("Combined Cache Thrashing Performance", conf);
 }
-

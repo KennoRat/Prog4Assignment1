@@ -25,6 +25,7 @@ namespace dae
 
 		virtual void Update() override;
 		virtual void Render() const override;
+		virtual void RenderImGui() override;
 
 	private:
 		float m_angle{0.f};

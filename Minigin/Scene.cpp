@@ -67,6 +67,14 @@ void Scene::Render() const
 	}
 }
 
+void Scene::RenderImGui()
+{
+	for (const auto& object : m_objects)
+	{
+		object->RenderImGui();
+	}
+}
+
 void Scene::DeleteObject(GameObject* object)
 {
 	if (object == nullptr) return;

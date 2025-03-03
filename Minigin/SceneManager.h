@@ -24,6 +24,7 @@ namespace dae
 		void Update();
 		void LateUpdate();
 		void Render();
+		void RenderImGui();
 	private:
 		friend class Singleton<SceneManager>;
 		SceneManager() = default;

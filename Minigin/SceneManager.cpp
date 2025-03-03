@@ -32,6 +32,14 @@ void SceneManager::Render()
 	}
 }
 
+void SceneManager::RenderImGui()
+{
+	for (const auto& scene : m_scenes)
+	{
+		scene->RenderImGui();
+	}
+}
+
 Scene& SceneManager::CreateScene(const std::string& name)
 {
 	const auto& scene = std::shared_ptr<Scene>(new Scene(name));

@@ -26,6 +26,7 @@ namespace dae
 
 		virtual void Update() override; // Not used
 		virtual void Render() const override;
+		virtual void RenderImGui() override;
 
 		void SetTexture(const std::string& filename);
 

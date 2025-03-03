@@ -31,6 +31,14 @@ void GameObject::Render() const
 	}
 }
 
+void GameObject::RenderImGui()
+{
+	for (auto& component : m_components)
+	{
+		component->RenderImGui();
+	}
+}
+
 void GameObject::SetLocalPosition(const Transform& Position)
 {
 	auto pos = Position.GetPosition();
