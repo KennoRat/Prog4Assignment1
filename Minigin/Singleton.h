@@ -11,7 +11,7 @@ namespace dae
 			return instance;
 		}
 
-		virtual ~Singleton() = default;
+
 		Singleton(const Singleton& other) = delete;
 		Singleton(Singleton&& other) = delete;
 		Singleton& operator=(const Singleton& other) = delete;
@@ -19,5 +19,6 @@ namespace dae
 
 	protected:
 		Singleton() = default;
+		virtual ~Singleton() = default;
 	};
 }

@@ -1,12 +1,12 @@
 #pragma once
 #include <memory>
-
+#include <string>
 #include "BaseComponent.h"
-#include "Texture2D.h"
 
 namespace dae
 {
 	class GameObject;
+	class Texture2D;
 
 	class RenderComponent final : public BaseComponent
 	{

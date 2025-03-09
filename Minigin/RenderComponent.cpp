@@ -1,17 +1,24 @@
 #include "RenderComponent.h"
+#include "Texture2D.h"
 #include "GameObject.h"
 #include "ResourceManager.h"
 #include "Renderer.h"
 
 using namespace dae;
 
-RenderComponent::RenderComponent(std::shared_ptr<GameObject> gameObject):BaseComponent(*gameObject.get())
+RenderComponent::RenderComponent(std::shared_ptr<GameObject> gameObject)
+	:RenderComponent(gameObject, 0, 0)
 {
 }
 
 RenderComponent::RenderComponent(std::shared_ptr<GameObject> gameObject, float width, float height)
-	:BaseComponent(*gameObject.get()), m_width{width}, m_height{height}
+	:BaseComponent(gameObject ? *gameObject : throw std::runtime_error("Null GameObject!"))
+	, m_width{width}, m_height{height}
 {
+	if (!gameObject)
+	{
+		throw std::runtime_error("RenderComponent received a nullptr GameObject!");
+	}
 }
 
 RenderComponent::~RenderComponent()
@@ -43,7 +50,7 @@ void RenderComponent::RenderImGui()
 void RenderComponent::SetTexture(const std::string& filename)
 {
 	m_texture = ResourceManager::GetInstance().LoadTexture(filename);
-	if(m_width == 0.f && m_height == 0.f)
+	if (m_width == 0.f && m_height == 0.f)
 	{
 		m_width = static_cast<float>(m_texture->GetSize().x);
 		m_height = static_cast<float>(m_texture->GetSize().y);

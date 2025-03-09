@@ -87,7 +87,7 @@ void dae::Minigin::Run(const std::function<void()>& load)
 	auto& sceneManager = SceneManager::GetInstance();
 	auto& input = InputManager::GetInstance();
 	auto& time = Time::GetInstance();
-
+	
     bool doContinue = true; // Quits Game
 	const double ms_per_frame = 16.67; // 60 FPS
 
