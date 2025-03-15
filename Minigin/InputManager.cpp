@@ -1,49 +1,94 @@
-#include <SDL.h>
 #include "InputManager.h"
 #include "imgui.h"
 #include <backends/imgui_impl_sdl2.h>
 #include <iostream>
 
-
 using namespace dae;
 
 bool InputManager::ProcessInput()
 {
-	std::vector<SDL_Keycode> m_pressedKeys;
+    SDL_Event e;
+    while (SDL_PollEvent(&e))
+    {
+        if (e.type == SDL_QUIT)
+        {
+            return false;
+        }
 
-	SDL_Event e;
-	while (SDL_PollEvent(&e)) {
-		if (e.type == SDL_QUIT) {
-			return false;
-		}
-		if (e.type == SDL_KEYDOWN) {
-			auto iterator = m_KeyBindings.find(e.key.keysym.sym);
-			if (iterator != m_KeyBindings.end()) // If key is bound to a command
-			{
-				//std::cout << "Key Pressed: " << SDL_GetKeyName(e.key.keysym.sym) << std::endl;
-				m_pressedKeys.push_back(e.key.keysym.sym);
-			}
-		}
-		if (e.type == SDL_MOUSEBUTTONDOWN) {
-			
-		}
+        // Process events for ImGui
+        ImGui_ImplSDL2_ProcessEvent(&e);
+    }
 
-		// Now execute all collected key commands
-		for (auto key : m_pressedKeys) {
-			auto it = m_KeyBindings.find(key);
-			if (it != m_KeyBindings.end()) {
-				it->second->Execute();
-			}
-		}
+	// Keyboard input
+    UpdateKeyStates();
 
-		//Process events for ImGui
-		ImGui_ImplSDL2_ProcessEvent(&e);
+    for (auto& keyCmd : m_pKeyBindings)
+    {
+        bool isKeyPressed = m_CurrentKeyStates[keyCmd->Scancode];
+        bool wasKeyPressed = m_PreviousKeyStates[keyCmd->Scancode];
+
+
+        switch (keyCmd->State)
+        {
+		case KeyState::Pressed:
+			if (isKeyPressed)
+				keyCmd->command->Execute();
+			break;
+		case KeyState::Down:
+			if (isKeyPressed && !wasKeyPressed)
+				keyCmd->command->Execute();
+			break;
+		case KeyState::Up:
+			if (!isKeyPressed && wasKeyPressed)
+				keyCmd->command->Execute();
+			break;
+        }
+    }
+
+	//Controller input
+	for (auto& controller : m_pControllerInput)
+	{
+		controller->ProcessInput();
 	}
 
-	return true;
+    return true;
 }
 
-void InputManager::BindKey(SDL_Keycode key, std::unique_ptr<Command> command)
+void InputManager::UpdateKeyStates()
 {
-	m_KeyBindings[key] = std::move(command);
+    // Get new keyboard state
+    if (!m_CurrentKeyStates)
+    {
+        m_CurrentKeyStates = SDL_GetKeyboardState(NULL);
+    }
+
+    // Store previous state
+    memcpy(m_PreviousKeyStates, m_CurrentKeyStates, sizeof(m_PreviousKeyStates));
+
+}
+
+void InputManager::BindKey(SDL_Scancode scancode, KeyState state, std::unique_ptr<Command> command)
+{
+    m_pKeyBindings.emplace_back(std::make_unique<KeyCommand>(KeyCommand{ scancode, state, std::move(command) }));
+}
+
+void InputManager::UnbindKey(SDL_Scancode scancode)
+{
+    // Find the key binding
+    auto iterator = std::remove_if(m_pKeyBindings.begin(), m_pKeyBindings.end(),
+        [scancode](const std::unique_ptr<KeyCommand>& keyCmd)
+        {
+            return keyCmd->Scancode == scancode;
+        });
+
+    // Remove from the vector
+    if (iterator != m_pKeyBindings.end())
+    {
+        m_pKeyBindings.erase(iterator, m_pKeyBindings.end());
+    }
+}
+
+void InputManager::AddController(std::unique_ptr<ControllerInput> controller)
+{
+	m_pControllerInput.emplace_back(std::move(controller));
 }

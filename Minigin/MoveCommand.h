@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Command.h"
-#include "MovementComponent.h"
+#include <memory>
 
 namespace dae
 {
@@ -16,12 +16,12 @@ namespace dae
 	class MoveCommand : public GameObjectCommand
 	{
 	public:
-		MoveCommand(std::shared_ptr<GameObject> gameObject, Direction moveDirection);
+		MoveCommand(std::shared_ptr<GameObject> gameObject, Direction moveDirection, float speed = 1);
 
 		virtual void Execute() override;
 
 	private:
 		Direction m_direction;
-		MovementComponent* m_moveComponent;
+		float m_speed;
 	};
 }
