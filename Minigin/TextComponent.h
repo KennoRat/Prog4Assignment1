@@ -10,7 +10,7 @@ namespace dae
 {
 	class GameObject;
 
-	class TextComponent : public BaseComponent
+	class TextComponent final : public BaseComponent
 	{
 	public:
 		

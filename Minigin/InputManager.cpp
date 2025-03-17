@@ -27,7 +27,6 @@ bool InputManager::ProcessInput()
         bool isKeyPressed = m_CurrentKeyStates[keyCmd->Scancode];
         bool wasKeyPressed = m_PreviousKeyStates[keyCmd->Scancode];
 
-
         switch (keyCmd->State)
         {
 		case KeyState::Pressed:
@@ -51,6 +50,9 @@ bool InputManager::ProcessInput()
 		controller->ProcessInput();
 	}
 
+    // Store previous state
+    memcpy(m_PreviousKeyStates, m_CurrentKeyStates, sizeof(m_PreviousKeyStates));
+
     return true;
 }
 
@@ -61,10 +63,6 @@ void InputManager::UpdateKeyStates()
     {
         m_CurrentKeyStates = SDL_GetKeyboardState(NULL);
     }
-
-    // Store previous state
-    memcpy(m_PreviousKeyStates, m_CurrentKeyStates, sizeof(m_PreviousKeyStates));
-
 }
 
 void InputManager::BindKey(SDL_Scancode scancode, KeyState state, std::unique_ptr<Command> command)
