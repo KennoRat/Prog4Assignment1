@@ -1,7 +1,7 @@
 #include <format>
 
 #include "FpsComponent.h"
-#include "Time.h"
+#include "TimeGameEngine.h"
 
 using namespace dae;
 

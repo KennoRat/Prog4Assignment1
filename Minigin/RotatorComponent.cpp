@@ -1,6 +1,6 @@
 #include "RotatorComponent.h"
 #include "GameObject.h"
-#include "Time.h"
+#include "TimeGameEngine.h"
 
 using namespace dae;
 

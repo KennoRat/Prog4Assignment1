@@ -230,7 +230,7 @@
     <ClInclude Include="Texture2D.h" />
     <ClInclude Include="RenderComponent.h" />
     <ClInclude Include="ThrashTheCacheComponent.h" />
-    <ClInclude Include="Time.h" />
+    <ClInclude Include="TimeGameEngine.h" />
     <ClInclude Include="Transform.h" />
   </ItemGroup>
   <ItemGroup>
@@ -267,7 +267,7 @@
     <ClCompile Include="Texture2D.cpp" />
     <ClCompile Include="RenderComponent.cpp" />
     <ClCompile Include="ThrashTheCacheComponent.cpp" />
-    <ClCompile Include="Time.cpp" />
+    <ClCompile Include="TimeGameEngine.cpp" />
     <ClCompile Include="Transform.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

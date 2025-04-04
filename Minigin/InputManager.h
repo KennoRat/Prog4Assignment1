@@ -1,10 +1,10 @@
 #pragma once
 #include "Singleton.h"
 #include "Command.h"
-#include <SDL.h>
+#include "ControllerInput.h"
+#include <SDL_scancode.h>
 #include <memory>
 #include <vector>
-#include "ControllerInput.h"
 
 namespace dae
 {
@@ -31,7 +31,7 @@ namespace dae
         void BindKey(SDL_Scancode scancode, KeyState state, std::unique_ptr<Command> command);
         void UnbindKey(SDL_Scancode scancode);
 
-		void AddController(std::unique_ptr<ControllerInput> controller);
+        void AddController(std::unique_ptr<ControllerInput> controller);
 
     private:
         friend class Singleton<InputManager>;

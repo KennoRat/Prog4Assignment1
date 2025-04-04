@@ -2,6 +2,7 @@
 #include "imgui.h"
 #include <backends/imgui_impl_sdl2.h>
 #include <iostream>
+#include <SDL_events.h>
 
 using namespace dae;
 
