@@ -163,11 +163,31 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="DieCommand.h" />
+    <ClInclude Include="FpsComponent.h" />
+    <ClInclude Include="GainPointsCommand.h" />
+    <ClInclude Include="LivesComponent.h" />
+    <ClInclude Include="LivesDisplayComponent.h" />
+    <ClInclude Include="MoveCommand.h" />
     <ClInclude Include="MsPacman.h" />
+    <ClInclude Include="RotatorComponent.h" />
+    <ClInclude Include="ScoreComponent.h" />
+    <ClInclude Include="ScoreDisplayComponent.h" />
+    <ClInclude Include="ThrashTheCacheComponent.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DieCommand.cpp" />
+    <ClCompile Include="FpsComponent.cpp" />
+    <ClCompile Include="GainPointsCommand.cpp" />
+    <ClCompile Include="LivesComponent.cpp" />
+    <ClCompile Include="LivesDisplayComponent.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MoveCommand.cpp" />
     <ClCompile Include="MsPacman.cpp" />
+    <ClCompile Include="RotatorComponent.cpp" />
+    <ClCompile Include="ScoreComponent.cpp" />
+    <ClCompile Include="ScoreDisplayComponent.cpp" />
+    <ClCompile Include="ThrashTheCacheComponent.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
