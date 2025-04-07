@@ -179,9 +179,6 @@
     <ClCompile Include="..\3rdParty\Imgui\imgui_plot.cpp">
       <Filter>Imgui</Filter>
     </ClCompile>
-    <ClCompile Include="BaseComponent.cpp">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
     <ClCompile Include="RenderComponent.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>

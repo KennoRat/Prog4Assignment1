@@ -25,6 +25,7 @@
 #include "ScoreComponent.h"
 #include "ScoreDisplayComponent.h"
 #include "LivesComponent.h"
+#include "LevelGridComponent.h"
 
 //Commands
 #include "MoveCommand.h"
@@ -37,11 +38,10 @@
 #include <ControllerInput.h>
 #include <SDL_scancode.h>
 
-
 void InitializePlayer(dae::Scene& scene);
 void load();
 
-int main(int argc, char* argv[])
+int main(int, char*)
 {
 	dae::Minigin engine("../Data/");
 	engine.Run(load);
@@ -63,7 +63,7 @@ void load()
 	auto logoObject = std::make_shared<dae::GameObject>();
 	textureComponent = std::make_unique<dae::RenderComponent>(logoObject);
 	textureComponent->SetTexture("logo.tga");
-	logoObject->SetLocalPosition(550, 180);
+	logoObject->SetLocalPosition(1000.f, 620.f);
 	logoObject->AddComponent(std::move(textureComponent));
 	scene.Add(logoObject);
 
@@ -71,9 +71,19 @@ void load()
 	auto textObject = std::make_shared<dae::GameObject>();
 	auto font = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 36);
 	auto textComponent = std::make_unique<dae::TextComponent>(textObject, "Programming 4 Assignment", std::move(font));
-	textObject->SetLocalPosition(420, 2);
+	textObject->SetLocalPosition(420.f, 5.f);
 	textObject->AddComponent(std::move(textComponent));
 	scene.Add(textObject);
+
+	// Test Level
+	auto levelObject = std::make_shared<dae::GameObject>();
+	float desiredTileSize = 20.0f; // Example size in pixels
+	auto levelGridComponent = std::make_unique<LevelGridComponent>(levelObject, desiredTileSize);
+	levelGridComponent->LoadLevel("../Data/MsPacman_Level1.csv");
+
+	levelObject->SetLocalPosition(370.f, 50.f);
+	levelObject->AddComponent(std::move(levelGridComponent));
+	scene.Add(levelObject);
 
 	InitializePlayer(scene);
 }
@@ -118,43 +128,6 @@ void InitializePlayer(dae::Scene& scene)
 	missPacManObject->AddComponent(std::move(scoreComponent));
 	scene.Add(missPacManObject);
 
-	//Make UI Display
-	auto displayLivesPlayer2Object = std::make_shared<dae::GameObject>();
-	auto displayScorePlayer2Object = std::make_shared<dae::GameObject>();
-
-	//Add Observer to Subject
-	playerDieEvent = std::make_unique<dae::Subject>();
-	auto displayLivesPlayer2Component = std::make_unique<dae::LivesDisplayComponent>(displayLivesPlayer2Object);
-	playerDieEvent->AddObserver(displayLivesPlayer2Component.get());
-
-	textComponent = std::make_unique<dae::TextComponent>(displayLivesPlayer2Object, "# Lives Player2", dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 20));
-	displayLivesPlayer2Object->AddComponent(std::move(textComponent));
-	displayLivesPlayer2Object->AddComponent(std::move(displayLivesPlayer2Component));
-	displayLivesPlayer2Object->SetLocalPosition(10, 230);
-	scene.Add(displayLivesPlayer2Object);
-
-	playerGainPointsEvent = std::make_unique<dae::Subject>();
-	auto displayScorePlayer2Component = std::make_unique<dae::ScoreDisplayComponent>(displayScorePlayer2Object);
-	playerGainPointsEvent->AddObserver(displayScorePlayer2Component.get());
-
-	textComponent = std::make_unique<dae::TextComponent>(displayScorePlayer2Object, "Score: 0", dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 20));
-	displayScorePlayer2Object->AddComponent(std::move(textComponent));
-	displayScorePlayer2Object->AddComponent(std::move(displayScorePlayer2Component));
-	displayScorePlayer2Object->SetLocalPosition(10, 330);
-	scene.Add(displayScorePlayer2Object);
-
-	//Make Ghost
-	auto blueGhostObject = std::make_shared<dae::GameObject>();
-	textureComponent = std::make_unique<dae::RenderComponent>(blueGhostObject);
-	textureComponent->SetTexture("ScaredGhost.png");
-	livesComponent = std::make_unique<dae::LivesComponent>(blueGhostObject, std::move(playerDieEvent), 3);
-	scoreComponent = std::make_unique<dae::ScoreComponent>(blueGhostObject, std::move(playerGainPointsEvent));
-	blueGhostObject->AddComponent(std::move(textureComponent));
-	blueGhostObject->AddComponent(std::move(livesComponent));
-	blueGhostObject->AddComponent(std::move(scoreComponent));
-	blueGhostObject->SetLocalPosition(700, 500);
-	scene.Add(blueGhostObject);
-
 	//Set Keybinds
 	auto& input = dae::InputManager::GetInstance();
 	const float movementSpeedPlayer1 = 250.f;
@@ -175,25 +148,4 @@ void InitializePlayer(dae::Scene& scene)
 	input.BindKey(SDL_SCANCODE_Z, dae::KeyState::Up, std::move(DieCommandPlayer1));
 	input.BindKey(SDL_SCANCODE_X, dae::KeyState::Up, std::move(GainPointsCommandPlayer1));
 
-	//Set Controller Keybinds
-	auto controllerInput = std::make_unique<dae::ControllerInput>();
-	const float movementSpeedPlayer2 = 125.f;
-
-	auto ControllerMoveUpCommand = std::make_unique<dae::MoveCommand>(blueGhostObject, dae::Direction::Up, movementSpeedPlayer2);
-	auto ControllerMoveLeftCommand = std::make_unique<dae::MoveCommand>(blueGhostObject, dae::Direction::Left, movementSpeedPlayer2);
-	auto ControllerMoveRightCommand = std::make_unique<dae::MoveCommand>(blueGhostObject, dae::Direction::Right, movementSpeedPlayer2);
-	auto ControllerMoveDownCommand = std::make_unique<dae::MoveCommand>(blueGhostObject, dae::Direction::Down, movementSpeedPlayer2);
-
-	controllerInput->BindButton(XINPUT_GAMEPAD_DPAD_UP, dae::ControllerState::Pressed, std::move(ControllerMoveUpCommand));
-	controllerInput->BindButton(XINPUT_GAMEPAD_DPAD_LEFT, dae::ControllerState::Pressed, std::move(ControllerMoveLeftCommand));
-	controllerInput->BindButton(XINPUT_GAMEPAD_DPAD_RIGHT, dae::ControllerState::Pressed, std::move(ControllerMoveRightCommand));
-	controllerInput->BindButton(XINPUT_GAMEPAD_DPAD_DOWN, dae::ControllerState::Pressed, std::move(ControllerMoveDownCommand));
-
-	auto DieCommandPlayer2 = std::make_unique<dae::DieCommand>(blueGhostObject);
-	auto GainPointsCommandPlayer2 = std::make_unique<dae::GainPointsCommand>(blueGhostObject);
-
-	controllerInput->BindButton(XINPUT_GAMEPAD_X, dae::ControllerState::Down, std::move(DieCommandPlayer2));
-	controllerInput->BindButton(XINPUT_GAMEPAD_Y, dae::ControllerState::Down, std::move(GainPointsCommandPlayer2));
-
-	input.AddController(std::move(controllerInput));
 }

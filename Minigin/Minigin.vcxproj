@@ -232,7 +232,6 @@
     <ClCompile Include="..\3rdParty\Imgui\imgui_plot.cpp" />
     <ClCompile Include="..\3rdParty\Imgui\imgui_tables.cpp" />
     <ClCompile Include="..\3rdParty\Imgui\imgui_widgets.cpp" />
-    <ClCompile Include="BaseComponent.cpp" />
     <ClCompile Include="Command.cpp" />
     <ClCompile Include="ControllerInput.cpp" />
     <ClCompile Include="Font.cpp" />

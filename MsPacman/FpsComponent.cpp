@@ -6,7 +6,7 @@
 using namespace dae;
 
 FpsComponent::FpsComponent(std::shared_ptr<Font> font, std::shared_ptr<GameObject> gameObject)
-	: BaseComponent(*gameObject.get())
+	: BaseComponent(*gameObject)
 {
 	//m_textComponent = new TextComponent("FPS: 0", font, gameObject);
 	m_textComponent = std::make_unique<TextComponent>(gameObject, "FPS: 0", font);
