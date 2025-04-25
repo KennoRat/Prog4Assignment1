@@ -26,6 +26,7 @@
 #include "ScoreDisplayComponent.h"
 #include "LivesComponent.h"
 #include "LevelGridComponent.h"
+#include "PlayerMovementComponent.h"
 
 //Commands
 #include "MoveCommand.h"
@@ -38,7 +39,8 @@
 #include <ControllerInput.h>
 #include <SDL_scancode.h>
 
-void InitializePlayer(dae::Scene& scene);
+
+void InitializePlayer(dae::Scene& scene, std::shared_ptr<dae::GameObject> levelObject);
 void load();
 
 int main(int, char*)
@@ -77,7 +79,7 @@ void load()
 
 	// Test Level
 	auto levelObject = std::make_shared<dae::GameObject>();
-	float desiredTileSize = 20.0f; // Example size in pixels
+	float desiredTileSize = 20.0f; // Size in pixels
 	auto levelGridComponent = std::make_unique<LevelGridComponent>(levelObject, desiredTileSize);
 	levelGridComponent->LoadLevel("../Data/MsPacman_Level1.csv");
 
@@ -85,10 +87,10 @@ void load()
 	levelObject->AddComponent(std::move(levelGridComponent));
 	scene.Add(levelObject);
 
-	InitializePlayer(scene);
+	InitializePlayer(scene, levelObject);
 }
 
-void InitializePlayer(dae::Scene& scene)
+void InitializePlayer(dae::Scene& scene, std::shared_ptr<dae::GameObject> levelObject)
 {
 	//Make UI Display
 	auto displayLivesPlayer1Object = std::make_shared<dae::GameObject>();
@@ -121,25 +123,38 @@ void InitializePlayer(dae::Scene& scene)
 	auto textureComponent = std::make_unique<dae::RenderComponent>(missPacManObject);
 	auto livesComponent = std::make_unique<dae::LivesComponent>(missPacManObject, std::move(playerDieEvent), 3);
 	auto scoreComponent = std::make_unique<dae::ScoreComponent>(missPacManObject, std::move(playerGainPointsEvent));
+
+	const float movementSpeedPlayer1 = 80.f;
+	int startRow = 23;
+	int startCol = 13;
+
+	auto movementComponent = std::make_unique<PlayerMovementComponent>(missPacManObject, levelObject, movementSpeedPlayer1);
+
 	textureComponent->SetTexture("MissPacMan.png");
-	missPacManObject->SetLocalPosition(600, 500);
 	missPacManObject->AddComponent(std::move(textureComponent));
 	missPacManObject->AddComponent(std::move(livesComponent));
 	missPacManObject->AddComponent(std::move(scoreComponent));
+	missPacManObject->AddComponent(std::move(movementComponent));
+
+	// Set initial grid position
+	auto* pMoveComp = missPacManObject->GetComponent<PlayerMovementComponent>();
+	if (pMoveComp) {
+		pMoveComp->SnapToGrid(startRow, startCol); 
+	}
+
 	scene.Add(missPacManObject);
 
 	//Set Keybinds
 	auto& input = dae::InputManager::GetInstance();
-	const float movementSpeedPlayer1 = 250.f;
-	auto MoveUpCommand = std::make_unique<dae::MoveCommand>(missPacManObject, dae::Direction::Up, movementSpeedPlayer1);
-	auto MoveLeftCommand = std::make_unique<dae::MoveCommand>(missPacManObject, dae::Direction::Left, movementSpeedPlayer1);
-	auto MoveRightCommand = std::make_unique<dae::MoveCommand>(missPacManObject, dae::Direction::Right, movementSpeedPlayer1);
-	auto MoveDownCommand = std::make_unique<dae::MoveCommand>(missPacManObject, dae::Direction::Down, movementSpeedPlayer1);
+	auto MoveUpCommand = std::make_unique<dae::MoveCommand>(missPacManObject, dae::Direction::Up);
+	auto MoveLeftCommand = std::make_unique<dae::MoveCommand>(missPacManObject, dae::Direction::Left);
+	auto MoveRightCommand = std::make_unique<dae::MoveCommand>(missPacManObject, dae::Direction::Right);
+	auto MoveDownCommand = std::make_unique<dae::MoveCommand>(missPacManObject, dae::Direction::Down);
 
-	input.BindKey(SDL_SCANCODE_W, dae::KeyState::Pressed, std::move(MoveUpCommand));
-	input.BindKey(SDL_SCANCODE_A, dae::KeyState::Pressed, std::move(MoveLeftCommand));
-	input.BindKey(SDL_SCANCODE_D, dae::KeyState::Pressed, std::move(MoveRightCommand));
-	input.BindKey(SDL_SCANCODE_S, dae::KeyState::Pressed, std::move(MoveDownCommand));
+	input.BindKey(SDL_SCANCODE_W, dae::KeyState::Down, std::move(MoveUpCommand));
+	input.BindKey(SDL_SCANCODE_A, dae::KeyState::Down, std::move(MoveLeftCommand));
+	input.BindKey(SDL_SCANCODE_D, dae::KeyState::Down, std::move(MoveRightCommand));
+	input.BindKey(SDL_SCANCODE_S, dae::KeyState::Down, std::move(MoveDownCommand));
 	//input.UnbindKey(SDL_SCANCODE_W);
 
 	auto DieCommandPlayer1 = std::make_unique<dae::DieCommand>(missPacManObject);

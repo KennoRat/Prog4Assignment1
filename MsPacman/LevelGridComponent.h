@@ -20,7 +20,7 @@ public:
 	// Constructor
 	LevelGridComponent(std::shared_ptr<dae::GameObject> gameObject, float tileSize = 15.0f);
 
-	//Destructor
+	// Destructor
 	virtual ~LevelGridComponent() = default;
 
 	// Rule Of Five

@@ -10,18 +10,18 @@ namespace dae
 		Left,
 		Right,
 		Up,
-		Down
+		Down,
+		Idle
 	};
 
 	class MoveCommand : public GameObjectCommand
 	{
 	public:
-		MoveCommand(std::shared_ptr<GameObject> gameObject, Direction moveDirection, float speed = 1);
+		MoveCommand(std::shared_ptr<GameObject> gameObject, Direction moveDirection);
 
 		virtual void Execute() override;
 
 	private:
 		Direction m_direction;
-		float m_speed;
 	};
 }

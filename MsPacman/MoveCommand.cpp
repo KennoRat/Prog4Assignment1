@@ -1,35 +1,23 @@
 #include "MoveCommand.h"
 #include "GameObject.h"
-#include "TimeGameEngine.h"
+#include "PlayerMovementComponent.h"
 
 using namespace dae;
 
-MoveCommand::MoveCommand(std::shared_ptr<GameObject> gameObject, Direction moveDirection, float speed)
-	: GameObjectCommand(gameObject.get()), m_direction(moveDirection), m_speed(speed)
+MoveCommand::MoveCommand(std::shared_ptr<GameObject> gameObject, Direction moveDirection)
+    : GameObjectCommand(gameObject.get()),
+    m_direction(moveDirection)
 {
 }
 
 void MoveCommand::Execute()
 {
-    auto deltaTime = Time::GetInstance().GetDeltaTime();
-    auto pos = GetGameObject()->GetWorldPosition().GetPosition();
+    auto* gameObject = GetGameObject();
 
-    switch (m_direction)
+    auto* movementComponent = gameObject->GetComponent<PlayerMovementComponent>();
+    if (movementComponent)
     {
-    case Direction::Left:
-        pos.x -= static_cast<float>(m_speed * deltaTime);
-        break;
-    case Direction::Right:
-        pos.x += static_cast<float>(m_speed * deltaTime);
-        break;
-    case Direction::Up:
-        pos.y -= static_cast<float>(m_speed * deltaTime);
-        break;
-    case Direction::Down:
-        pos.y += static_cast<float>(m_speed * deltaTime);
-        break;
+        movementComponent->SetDesiredDirection(m_direction);
     }
-
-    GetGameObject()->SetLocalPosition(pos.x, pos.y);
 }
 
