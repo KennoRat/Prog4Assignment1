@@ -2,11 +2,12 @@
 #include "GameObject.h"
 #include "TimeGameEngine.h"
 #include "LevelGridComponent.h"
+#include "ScoreComponent.h" 
 #include <imgui.h>
 #include <iostream>
 
-PlayerMovementComponent::PlayerMovementComponent(std::shared_ptr<dae::GameObject> owner, std::shared_ptr<dae::GameObject> levelObject, float speed) :
-    BaseComponent(*owner), // Pass raw pointer to BaseComponent constructor
+PlayerMovementComponent::PlayerMovementComponent(std::shared_ptr<dae::GameObject> gameObject, std::shared_ptr<dae::GameObject> levelObject, float speed) :
+    BaseComponent(*gameObject),
     m_pLevelObject(levelObject),
     m_speed(speed)
 {
@@ -24,6 +25,12 @@ void PlayerMovementComponent::Initialize()
     if (!m_pLevelGridCache)
     {
         throw std::runtime_error("Level GameObject does not have a LevelGridComponent!");
+    }
+
+    m_pScoreComponentCache = GetGameObject()->GetComponent<dae::ScoreComponent>();
+    if (!m_pScoreComponentCache)
+    {
+        throw std::runtime_error("PlayerMovementComponent owner does not have a ScoreComponent!");
     }
 
     // Move Player to Spawn Level Grid
@@ -51,9 +58,13 @@ void PlayerMovementComponent::Update()
         // Check if player is close enough to the center of the tile
         if (IsNearTarget(m_tileCenterTolerance))
         {
+            const auto targetGridCoords = m_pLevelGridCache->WorldToGridCoords(m_targetPosition.x, m_targetPosition.y);
+
             // Check if player can turn
             if (CanMove(currentGridCoords.first, currentGridCoords.second, m_desiredDirection))
             {
+                HandleTileReached(targetGridCoords.first, targetGridCoords.second);
+
                 // Snap and change to new direction
                 owner->SetLocalPosition(m_targetPosition.x, m_targetPosition.y);
                 m_currentDirection = m_desiredDirection;
@@ -86,15 +97,19 @@ void PlayerMovementComponent::Update()
                 // Reached Target and snap
                 owner->SetLocalPosition(m_targetPosition.x, m_targetPosition.y);
 
-                // Check if we can continue moving in the same direction
+                
                 const auto targetGridCoords = m_pLevelGridCache->WorldToGridCoords(m_targetPosition.x, m_targetPosition.y);
+                HandleTileReached(targetGridCoords.first, targetGridCoords.second);
+                const auto postReachPos = owner->GetWorldPosition().GetPosition();
+                const auto postReachGridCoords = m_pLevelGridCache->WorldToGridCoords(postReachPos.x, postReachPos.y);
 
-                if (CanMove(targetGridCoords.first, targetGridCoords.second, m_currentDirection))
+                // Check if we can continue moving in the same direction
+                if (CanMove(postReachGridCoords.first, postReachGridCoords.second, m_currentDirection))
                 {
                     // Get the next target tile
                     glm::vec2 dirVec = GetDirectionVector(m_currentDirection);
-                    int nextRow = targetGridCoords.first + static_cast<int>(dirVec.y);
-                    int nextCol = targetGridCoords.second + static_cast<int>(dirVec.x);
+                    int nextRow = postReachGridCoords.first + static_cast<int>(dirVec.y);
+                    int nextCol = postReachGridCoords.second + static_cast<int>(dirVec.x);
                     m_targetPosition = GetTileCenter(nextRow, nextCol);
                     m_isMoving = true;
                 }
@@ -117,8 +132,12 @@ void PlayerMovementComponent::Update()
 
             // Check if we can continue moving in the same direction
             const auto targetGridCoords = m_pLevelGridCache->WorldToGridCoords(m_targetPosition.x, m_targetPosition.y);
+            HandleTileReached(targetGridCoords.first, targetGridCoords.second);
+            const auto postReachPos = owner->GetWorldPosition().GetPosition();
+            const auto postReachGridCoords = m_pLevelGridCache->WorldToGridCoords(postReachPos.x, postReachPos.y);
 
-            if (CanMove(targetGridCoords.first, targetGridCoords.second, m_currentDirection))
+            // Check if we can continue moving in the same direction
+            if (CanMove(postReachGridCoords.first, postReachGridCoords.second, m_currentDirection))
             {
                 // Get the next target tile
                 glm::vec2 dirVec = GetDirectionVector(m_currentDirection);
@@ -216,6 +235,7 @@ void PlayerMovementComponent::SnapToGrid(int row, int col)
         GetGameObject()->SetLocalPosition(centerPos.x, centerPos.y);
         m_targetPosition = centerPos; // Update target as well
         m_isMoving = false; // Stop movement when snapping
+
         std::cout << "Snapped player to grid (" << row << ", " << col << ") at world (" << centerPos.x << ", " << centerPos.y << ")" << std::endl;
 
     }
@@ -229,14 +249,6 @@ bool PlayerMovementComponent::CanMove(int startRow, int startCol, dae::Direction
     glm::vec2 dirVec = GetDirectionVector(dir);
     int nextRow = startRow + static_cast<int>(dirVec.y);
     int nextCol = startCol + static_cast<int>(dirVec.x);
-
-    // Check bounds first
-    if (nextRow < 0 || nextRow >= m_pLevelGridCache->GetRows() ||
-        nextCol < 0 || nextCol >= m_pLevelGridCache->GetCols())
-    {
-        // To do: Allow movement for tunnel wrapping
-        return false;
-    }
 
     // Check if the target tile is a wall
     return !m_pLevelGridCache->IsWall(nextRow, nextCol);
@@ -271,5 +283,44 @@ glm::vec2 PlayerMovementComponent::GetDirectionVector(dae::Direction dir) const
     case dae::Direction::Right: return { 1.f,  0.f };
     case dae::Direction::Idle: return { 0.f,  0.f };
     default: return { 0.f,  0.f };
+    }
+}
+
+void PlayerMovementComponent::HandleTileReached(int row, int col)
+{
+    if (!m_pLevelGridCache) return;
+
+    TileType currentTile = m_pLevelGridCache->GetTileType(row, col);
+
+    // Check for Pellets
+    if (currentTile == TileType::Pellet)
+    {
+        m_pLevelGridCache->ClearTile(row, col);
+        if (m_pScoreComponentCache)
+        {
+            m_pScoreComponentCache->GainPoints(PELLET_SCORE);
+        }
+        //std::cout << "Ate Pellet at (" << row << "," << col << ")\n";
+    }
+    else if (currentTile == TileType::PowerPellet)
+    {
+        m_pLevelGridCache->ClearTile(row, col);
+        if (m_pScoreComponentCache)
+        {
+            m_pScoreComponentCache->GainPoints(POWER_PELLET_SCORE);
+            // TODO: Trigger Frightened mode for ghosts here
+        }
+        //std::cout << "Ate Power Pellet at (" << row << "," << col << ")\n";
+    }
+
+    //Check for Tunnel Wrapping
+    std::pair<int, int> destination = m_pLevelGridCache->GetTeleportDestination(currentTile);
+    if (destination != std::pair(0, 0))
+    {
+        std::cout << "Wrapping from (" << row << "," << col << ") type " << static_cast<int>(currentTile)
+            << " to (" << destination.first << "," << destination.second << ")" << std::endl;
+
+        // Teleport by snapping to the destination tile
+        SnapToGrid(destination.first, destination.second);
     }
 }

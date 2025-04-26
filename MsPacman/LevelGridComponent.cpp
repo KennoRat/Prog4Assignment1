@@ -73,12 +73,10 @@ void LevelGridComponent::Render() const
 
                 SDL_SetRenderDrawColor(sdlRenderer, pelletColor.r, pelletColor.g, pelletColor.b, pelletColor.a);
 
-                // Make pellet smaller than the tile
+                // Make pellet and center
                 SDL_Rect pelletRect;
                 pelletRect.w = static_cast<int>(m_tileSize * 0.25f);
                 pelletRect.h = static_cast<int>(m_tileSize * 0.25f);
-
-                // Center it within the tile
                 pelletRect.x = tileRect.x + (tileRect.w - pelletRect.w) / 2;
                 pelletRect.y = tileRect.y + (tileRect.h - pelletRect.h) / 2;
                 SDL_RenderFillRect(sdlRenderer, &pelletRect);
@@ -92,22 +90,13 @@ void LevelGridComponent::Render() const
 
                 SDL_SetRenderDrawColor(sdlRenderer, powerPelletColor.r, powerPelletColor.g, powerPelletColor.b, powerPelletColor.a);
 
-                // Make power pellet larger than regular pellet
+                // Make power pellet and center it
                 SDL_Rect powerPelletRect;
                 powerPelletRect.w = static_cast<int>(m_tileSize * 0.5f);
                 powerPelletRect.h = static_cast<int>(m_tileSize * 0.5f);
-
-                // Center it
                 powerPelletRect.x = tileRect.x + (tileRect.w - powerPelletRect.w) / 2;
                 powerPelletRect.y = tileRect.y + (tileRect.h - powerPelletRect.h) / 2;
                 SDL_RenderFillRect(sdlRenderer, &powerPelletRect);
-                break;
-
-            case TileType::Path:
-
-                SDL_SetRenderDrawColor(sdlRenderer, pathColor.r, pathColor.g, pathColor.b, pathColor.a);
-                SDL_RenderFillRect(sdlRenderer, &tileRect);
-
                 break;
 
             case TileType::GhostSpawn:
@@ -116,7 +105,16 @@ void LevelGridComponent::Render() const
                 SDL_RenderFillRect(sdlRenderer, &tileRect);
                 break;
 
+            case TileType::Path:
+            case TileType::TP1_Left:
+            case TileType::TP1_Right:
+            case TileType::TP2_Left:
+            case TileType::TP2_Right:
             default:
+
+                SDL_SetRenderDrawColor(sdlRenderer, pathColor.r, pathColor.g, pathColor.b, pathColor.a);
+                SDL_RenderFillRect(sdlRenderer, &tileRect);
+
                 break;
             }
         }
@@ -130,7 +128,17 @@ void LevelGridComponent::RenderImGui()
 
 void LevelGridComponent::LoadLevel(const std::string& filepath)
 {
-    std::ifstream inputFile(filepath); // Open the CSV file
+    // Clear everything
+    m_mapGrid.clear();
+    m_gridCols = 0;
+    m_gridRows = 0;
+    m_tp1LeftCoord = std::pair(0, 0);
+    m_tp1RightCoord = std::pair(0, 0);
+    m_tp2LeftCoord = std::pair(0, 0);
+    m_tp2RightCoord = std::pair(0, 0);
+
+    // Open the CSV file
+    std::ifstream inputFile(filepath);
 
     if (!inputFile.is_open()) {
         throw std::runtime_error("Error: Could not open level file: " + filepath);
@@ -138,31 +146,34 @@ void LevelGridComponent::LoadLevel(const std::string& filepath)
 
     std::string line;
     int rowNum = 0;
-    while (std::getline(inputFile, line)) { // Read one line at a time
-        if (line.empty()) continue; // Skip empty lines
+    while (std::getline(inputFile, line)) {
+        // Skip empty lines
+        if (line.empty()) continue; 
 
-        std::vector<TileType> row;
+        std::vector<TileType> rowVector;
         std::stringstream ss(line);
         std::string segment;
         int colNum = 0;
 
         while (std::getline(ss, segment, ';')) { 
+            // Convert string segment to integer
             try {
-                int tileValue = std::stoi(segment); // Convert string segment to integer
-                row.push_back(static_cast<TileType>(tileValue));
+                int tileValue = std::stoi(segment); 
+                rowVector.push_back(static_cast<TileType>(tileValue));
             }
             catch (const std::out_of_range&) {
                 std::cerr << "Warning: Number out of range '" << segment << "' at row " << rowNum + 1 << ", col " << colNum + 1 << std::endl;
-                row.push_back(TileType::Empty);
+                rowVector.push_back(TileType::Empty);
             }
             colNum++;
         }
 
+        // Set number of collumns based on the first row
         if (rowNum == 0) {
-            m_gridCols = colNum; // Set number of collumns based on the first row
+            m_gridCols = colNum; 
         }
 
-        m_mapGrid.push_back(row); 
+        m_mapGrid.push_back(rowVector);
         rowNum++;
     }
 
@@ -175,13 +186,36 @@ void LevelGridComponent::LoadLevel(const std::string& filepath)
         throw std::runtime_error("Error: Level file is empty or invalid: " + filepath);
     }
 
+    FindAndStoreTunnelEndpoints();
+
     std::cout << "Level loaded: " << m_gridCols << "x" << m_gridRows << std::endl;
+}
+
+void LevelGridComponent::ClearTile(int row, int col)
+{
+    // Check if Pacman eats pellet
+    if (row >= 0 && row < m_gridRows && col >= 0 && col < m_gridCols)
+    {
+        if (m_mapGrid[row][col] == TileType::Pellet || m_mapGrid[row][col] == TileType::PowerPellet)
+        {
+            m_mapGrid[row][col] = TileType::Path;
+        }
+    }
 }
 
 TileType LevelGridComponent::GetTileType(int row, int col) const
 {
     // Check if inside grid<b
-    if (row < 0 || row >= m_gridRows || col < 0 || col >= m_gridCols) {
+    if (row < 0 || row >= m_gridRows || col < 0 || col >= m_gridCols) 
+    {
+        if (row >= 0 && row < m_gridRows) // Check row is valid
+        {
+            // Check wrapping
+            if (col == 0 && m_tp1LeftCoord.first && row == m_tp1LeftCoord.second) return TileType::TP1_Right; 
+            else if (col == m_gridCols - 1 && m_tp1RightCoord.first && row == m_tp1RightCoord.second) return TileType::TP1_Left; 
+            else if (col == 0 && m_tp2LeftCoord.first && row == m_tp2LeftCoord.second) return TileType::TP2_Right;
+            else if (col == m_gridCols - 1 && m_tp2RightCoord.first && row == m_tp2RightCoord.second) return TileType::TP2_Left;
+        }
         return TileType::Empty;
     }
     return m_mapGrid[row][col];
@@ -189,7 +223,8 @@ TileType LevelGridComponent::GetTileType(int row, int col) const
 
 bool LevelGridComponent::IsWall(int row, int col) const
 {
-    return GetTileType(row, col) == TileType::Wall;
+    TileType type = GetTileType(row, col);
+    return type == TileType::Wall || type == TileType::Empty || type == TileType::GhostSpawn;
 }
 
 std::pair<int, int> LevelGridComponent::WorldToGridCoords(float worldX, float worldY) const
@@ -205,6 +240,28 @@ std::pair<int, int> LevelGridComponent::WorldToGridCoords(float worldX, float wo
     return { row, col };
 }
 
+std::pair<int, int> LevelGridComponent::GetTeleportDestination(TileType entranceType) const
+{
+    if(entranceType == TileType::TP1_Left)
+    {
+        return m_tp1RightCoord;
+    }
+    else if (entranceType == TileType::TP1_Right)
+    {
+        return m_tp1LeftCoord;
+    }
+    else if (entranceType == TileType::TP2_Left)
+    {
+        return m_tp2RightCoord;
+    }
+    else if (entranceType == TileType::TP2_Right)
+    {
+        return m_tp2LeftCoord;
+    }
+
+    return std::pair(0, 0);
+}
+
 glm::vec2 LevelGridComponent::GridToWorldCoords(int row, int col) const
 {
     const auto& pos = GetGameObject()->GetWorldPosition().GetPosition();
@@ -213,6 +270,24 @@ glm::vec2 LevelGridComponent::GridToWorldCoords(int row, int col) const
     float worldY = pos.y + row * m_tileSize;
 
     return { worldX, worldY };
+}
+
+void LevelGridComponent::FindAndStoreTunnelEndpoints()
+{
+    for (int r = 0; r < m_gridRows; ++r)
+    {
+        for (int c = 0; c < m_gridCols; ++c)
+        {
+            switch (m_mapGrid[r][c])
+            {
+            case TileType::TP1_Left:  m_tp1LeftCoord = std::make_pair(r, c); break;
+            case TileType::TP1_Right: m_tp1RightCoord = std::make_pair(r, c); break;
+            case TileType::TP2_Left:  m_tp2LeftCoord = std::make_pair(r, c); break;
+            case TileType::TP2_Right: m_tp2RightCoord = std::make_pair(r, c); break;
+            default: break;
+            }
+        }
+    }
 }
 
 

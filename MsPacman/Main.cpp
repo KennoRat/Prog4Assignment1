@@ -125,9 +125,6 @@ void InitializePlayer(dae::Scene& scene, std::shared_ptr<dae::GameObject> levelO
 	auto scoreComponent = std::make_unique<dae::ScoreComponent>(missPacManObject, std::move(playerGainPointsEvent));
 
 	const float movementSpeedPlayer1 = 80.f;
-	int startRow = 23;
-	int startCol = 13;
-
 	auto movementComponent = std::make_unique<PlayerMovementComponent>(missPacManObject, levelObject, movementSpeedPlayer1);
 
 	textureComponent->SetTexture("MissPacMan.png");
@@ -138,6 +135,8 @@ void InitializePlayer(dae::Scene& scene, std::shared_ptr<dae::GameObject> levelO
 
 	// Set initial grid position
 	auto* pMoveComp = missPacManObject->GetComponent<PlayerMovementComponent>();
+	int startRow = 23;
+	int startCol = 13;
 	if (pMoveComp) {
 		pMoveComp->SnapToGrid(startRow, startCol); 
 	}

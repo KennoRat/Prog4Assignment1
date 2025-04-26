@@ -5,11 +5,18 @@
 #include <glm.hpp>
 #include <memory>
 
+// Forward declare
+namespace dae { class ScoreComponent; }
+
 class PlayerMovementComponent final: public dae::BaseComponent
 {
 public:
+	// Scores
+	static constexpr int PELLET_SCORE{ 10 };
+	static constexpr int POWER_PELLET_SCORE{ 50 };
+
 	// Constructor
-	PlayerMovementComponent(std::shared_ptr<dae::GameObject> owner, std::shared_ptr<dae::GameObject> levelObject, float speed);
+	PlayerMovementComponent(std::shared_ptr<dae::GameObject> gameObject, std::shared_ptr<dae::GameObject> levelObject, float speed);
 
 	// Destructor
 	virtual ~PlayerMovementComponent() = default;
@@ -21,8 +28,8 @@ public:
 	PlayerMovementComponent& operator=(PlayerMovementComponent&& other) = delete;
 
 	virtual void Update() override;
-	virtual void Render() const override; // Likely empty
-	virtual void RenderImGui() override; // Potential debug info
+	virtual void Render() const override;
+	virtual void RenderImGui() override;
 
 	// Called by MoveCommand
 	void SetDesiredDirection(dae::Direction dir);
@@ -34,6 +41,7 @@ private:
 
 	// Methods
 	void Initialize();
+	void HandleTileReached(int row, int col);
 	bool CanMove(int startRow, int startCol, dae:: Direction dir) const;
 	bool IsNearTarget(float tolerance = 1.0f) const;
 	glm::vec2 GetTileCenter(int row, int col) const;
@@ -42,6 +50,7 @@ private:
 	// Data
 	std::shared_ptr<dae::GameObject> m_pLevelObject;
 	LevelGridComponent* m_pLevelGridCache{ nullptr }; // Cache for efficiency
+	dae::ScoreComponent* m_pScoreComponentCache{ nullptr };
 	float m_speed;
 	dae::Direction m_currentDirection{ dae::Direction::Left };
 	dae::Direction m_desiredDirection{ dae::Direction::Left };
