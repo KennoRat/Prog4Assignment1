@@ -3,8 +3,15 @@
 #include "TimeGameEngine.h"
 #include "LevelGridComponent.h"
 #include "ScoreComponent.h" 
+#include "ServiceLocator.h"
 #include <imgui.h>
 #include <iostream>
+
+// Define sound IDs 
+namespace Sounds {
+    dae::SoundId PELLET_EAT_SOUND = dae::INVALID_SOUND_ID; 
+    dae::SoundId POWER_PELLET_EAT_SOUND = dae::INVALID_SOUND_ID; 
+}
 
 PlayerMovementComponent::PlayerMovementComponent(std::shared_ptr<dae::GameObject> gameObject, std::shared_ptr<dae::GameObject> levelObject, float speed) :
     BaseComponent(*gameObject),
@@ -38,6 +45,30 @@ void PlayerMovementComponent::Initialize()
     const auto gridCoords = m_pLevelGridCache->WorldToGridCoords(currentPos.x, currentPos.y);
     m_targetPosition = GetTileCenter(gridCoords.first, gridCoords.second);
     GetGameObject()->SetLocalPosition(m_targetPosition.x, m_targetPosition.y);
+
+    // Load Sounds 
+    if (Sounds::PELLET_EAT_SOUND == dae::INVALID_SOUND_ID)
+    {
+        std::string pelletSoundPath = "../Data/Sounds/pacman_chomp.wav";
+        Sounds::PELLET_EAT_SOUND = dae::ServiceLocator::GetAudioService().LoadSound(pelletSoundPath);
+        if (Sounds::PELLET_EAT_SOUND == dae::INVALID_SOUND_ID) {
+            std::cerr << "Failed to queue loading for Pellet sound.\n";
+        }
+        else {
+            std::cout << "Queued loading for Pellet sound with ID: " << Sounds::PELLET_EAT_SOUND << std::endl;
+        }
+    }
+    if (Sounds::POWER_PELLET_EAT_SOUND == dae::INVALID_SOUND_ID)
+    {
+        std::string powerPelletSoundPath = "../Data/Sounds/pacman_eatfruit.wav"; 
+        Sounds::POWER_PELLET_EAT_SOUND = dae::ServiceLocator::GetAudioService().LoadSound(powerPelletSoundPath);
+        if (Sounds::POWER_PELLET_EAT_SOUND == dae::INVALID_SOUND_ID) {
+            std::cerr << "Failed to queue loading for Power Pellet sound.\n";
+        }
+        else {
+            std::cout << "Queued loading for Power Pellet sound with ID: " << Sounds::POWER_PELLET_EAT_SOUND << std::endl;
+        }
+    }
 
     m_initialized = true;
 }
@@ -300,6 +331,8 @@ void PlayerMovementComponent::HandleTileReached(int row, int col)
         {
             m_pScoreComponentCache->GainPoints(PELLET_SCORE);
         }
+
+        dae::ServiceLocator::GetAudioService().PlaySound(Sounds::PELLET_EAT_SOUND, 0.7f);
         //std::cout << "Ate Pellet at (" << row << "," << col << ")\n";
     }
     else if (currentTile == TileType::PowerPellet)
@@ -310,6 +343,8 @@ void PlayerMovementComponent::HandleTileReached(int row, int col)
             m_pScoreComponentCache->GainPoints(POWER_PELLET_SCORE);
             // TODO: Trigger Frightened mode for ghosts here
         }
+
+        dae::ServiceLocator::GetAudioService().PlaySound(Sounds::POWER_PELLET_EAT_SOUND, 0.8f);
         //std::cout << "Ate Power Pellet at (" << row << "," << col << ")\n";
     }
 
