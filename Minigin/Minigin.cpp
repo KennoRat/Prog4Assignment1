@@ -69,21 +69,12 @@ dae::Minigin::Minigin(const std::string& dataPath)
 	}
 
 	// Initialize SDL_mixer
-	int flags = MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG;
-	int initted = Mix_Init(flags);
 	bool mixerInitialized = true;
 
-	if ((initted & flags) != flags) 
-	{
-		printf("Mix_Init: Failed to init required audio format support! Mix_Init: %s\n", Mix_GetError());
-		mixerInitialized = false; 
-	}
-
-	if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 2048) < 0)
-	{
+	// Open the audio device 
+	if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 2048) < 0) {
 		printf("SDL_mixer could not initialize main audio device! SDL_mixer Error: %s\n", Mix_GetError());
 		mixerInitialized = false; 
-		if (initted != 0) Mix_Quit();
 	}
 
 	// Initialize Service Locator 
@@ -112,7 +103,6 @@ dae::Minigin::Minigin(const std::string& dataPath)
 	if (g_window == nullptr)
 	{
 		if (mixerInitialized) Mix_CloseAudio();
-		if (initted != 0) Mix_Quit();
 		SDL_Quit();
 		ServiceLocator::Shutdown(); 
 		throw std::runtime_error(std::string("SDL_CreateWindow Error: ") + SDL_GetError());
@@ -128,9 +118,13 @@ dae::Minigin::~Minigin()
 
 	Renderer::GetInstance().Destroy();
 	SDL_DestroyWindow(g_window);
-	g_window = nullptr;
-	Mix_CloseAudio();
-	while (Mix_Init(0)) Mix_Quit();
+	if (g_window)
+	{
+		SDL_DestroyWindow(g_window);
+		g_window = nullptr;
+		std::cout << "SDL Window destroyed.\n";
+	}
+
 	SDL_Quit();
 }
 

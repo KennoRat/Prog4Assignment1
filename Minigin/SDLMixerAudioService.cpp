@@ -57,8 +57,9 @@ namespace dae
         // Destructor
         ~SDLMixerAudioServiceImpl()
         {
+
             m_StopThread.store(true);
-            m_QueueCondition.notify_one();
+            m_QueueCondition.notify_one(); 
 
             // Wait for the thread to finish
             if (m_AudioThread.joinable())
@@ -68,15 +69,20 @@ namespace dae
             std::cout << "Audio Service: Thread joined.\n";
 
 
-            // Cleanup 
-            std::cout << "Audio Service: Cleaning up loaded sounds...\n";
+            // Cleanup Loaded Sounds 
+            std::cout << "Audio Service Impl: Cleaning up loaded sounds...\n";
             for (auto const& [id, chunk] : m_LoadedSounds)
             {
                 if (chunk) Mix_FreeChunk(chunk);
-                std::cout << "Freed chunk for ID: " << id << std::endl;
             }
             m_LoadedSounds.clear();
             m_SoundPathToId.clear();
+
+            // Cleanup SDL_mixer Library State 
+            std::cout << "Audio Service Impl: Closing audio device...\n";
+            Mix_CloseAudio();
+
+            std::cout << "Audio Service Impl: Mixer cleanup complete.\n";
         }
 
         // Rule of 5
