@@ -169,12 +169,18 @@
     <ClInclude Include="LevelGridComponent.h" />
     <ClInclude Include="LivesComponent.h" />
     <ClInclude Include="LivesDisplayComponent.h" />
+    <ClInclude Include="MenuState.h" />
     <ClInclude Include="MoveCommand.h" />
+    <ClInclude Include="PausedState.h" />
     <ClInclude Include="PlayerMovementComponent.h" />
+    <ClInclude Include="PlayingState.h" />
     <ClInclude Include="RotatorComponent.h" />
     <ClInclude Include="ScoreComponent.h" />
     <ClInclude Include="ScoreDisplayComponent.h" />
     <ClInclude Include="ThrashTheCacheComponent.h" />
+    <ClInclude Include="UIActivateCommand.h" />
+    <ClInclude Include="UICommandBase.h" />
+    <ClInclude Include="UINavigateCommand.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DieCommand.cpp" />
@@ -184,12 +190,18 @@
     <ClCompile Include="LivesComponent.cpp" />
     <ClCompile Include="LivesDisplayComponent.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MenuState.cpp" />
     <ClCompile Include="MoveCommand.cpp" />
+    <ClCompile Include="PausedState.cpp" />
     <ClCompile Include="PlayerMovementComponent.cpp" />
+    <ClCompile Include="PlayingState.cpp" />
     <ClCompile Include="RotatorComponent.cpp" />
     <ClCompile Include="ScoreComponent.cpp" />
     <ClCompile Include="ScoreDisplayComponent.cpp" />
     <ClCompile Include="ThrashTheCacheComponent.cpp" />
+    <ClCompile Include="UIActivateCommand.cpp" />
+    <ClCompile Include="UICommandBase.cpp" />
+    <ClCompile Include="UINavigateCommand.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -5,7 +5,7 @@
 
 using namespace dae;
 
-unsigned int Scene::m_idCounter = 0;
+//unsigned int Scene::m_idCounter = 0;
 
 Scene::Scene(const std::string& name) : m_name(name) {}
 
@@ -13,8 +13,9 @@ Scene::~Scene()
 {
 	for (auto& gameObject : m_objects)
 	{
-		gameObject.reset();  // Releases the shared_ptr
+		gameObject.reset();
 	}
+
 	m_objects.clear();
 };
 

@@ -25,6 +25,7 @@ namespace dae
     class InputManager final : public Singleton<InputManager>
     {
     public:
+
         bool ProcessInput();
         void UpdateKeyStates();
 
@@ -32,8 +33,11 @@ namespace dae
         void UnbindKey(SDL_Scancode scancode);
 
         void AddController(std::unique_ptr<ControllerInput> controller);
+        void ClearBindings();
+        bool IsKeyDownThisFrame(SDL_Scancode scancode);
 
     private:
+
         friend class Singleton<InputManager>;
         InputManager() = default;
 

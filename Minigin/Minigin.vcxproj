@@ -208,6 +208,8 @@
     <ClInclude Include="Event.h" />
     <ClInclude Include="Font.h" />
     <ClInclude Include="GameObject.h" />
+    <ClInclude Include="GameState.h" />
+    <ClInclude Include="GameStateMachine.h" />
     <ClInclude Include="IAudioService.h" />
     <ClInclude Include="NullAudioService.h" />
     <ClInclude Include="SDLMixerAudioService.h" />
@@ -240,6 +242,7 @@
     <ClCompile Include="ControllerInput.cpp" />
     <ClCompile Include="Font.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="GameStateMachine.cpp" />
     <ClCompile Include="IAudioService.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Minigin.cpp" />

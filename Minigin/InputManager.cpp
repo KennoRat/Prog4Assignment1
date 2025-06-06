@@ -91,3 +91,14 @@ void InputManager::AddController(std::unique_ptr<ControllerInput> controller)
 {
 	m_pControllerInput.emplace_back(std::move(controller));
 }
+
+void dae::InputManager::ClearBindings()
+{
+    m_pKeyBindings.clear();
+}
+
+bool InputManager::IsKeyDownThisFrame(SDL_Scancode scancode)
+{
+    if (!m_CurrentKeyStates) UpdateKeyStates();
+    return m_CurrentKeyStates[scancode] && !m_PreviousKeyStates[scancode];
+}

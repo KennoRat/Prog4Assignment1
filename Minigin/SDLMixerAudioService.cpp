@@ -238,7 +238,6 @@ namespace dae
         }
     };
 
-
     // SDLMixerAudioService Method Implementations 
 
     SDLMixerAudioService::SDLMixerAudioService()

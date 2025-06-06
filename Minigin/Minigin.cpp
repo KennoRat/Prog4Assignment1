@@ -20,6 +20,8 @@
 #include "TimeGameEngine.h"
 #include "ServiceLocator.h" 
 #include "SDLMixerAudioService.h"
+#include "GameStateMachine.h" 
+#include "backends/imgui_impl_sdl2.h"
 
 SDL_Window* g_window{};
 
@@ -72,7 +74,8 @@ dae::Minigin::Minigin(const std::string& dataPath)
 	bool mixerInitialized = true;
 
 	// Open the audio device 
-	if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 2048) < 0) {
+	if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 2048) < 0) 
+	{
 		printf("SDL_mixer could not initialize main audio device! SDL_mixer Error: %s\n", Mix_GetError());
 		mixerInitialized = false; 
 	}
@@ -91,6 +94,8 @@ dae::Minigin::Minigin(const std::string& dataPath)
 		std::cerr << "Audio initialization failed. Using NullAudioService.\n";
 	}
 
+	m_pGameStateMachine = std::make_unique<GameStateMachine>();
+
 	g_window = SDL_CreateWindow(
 		"Programming 4 assignment",
 		SDL_WINDOWPOS_CENTERED,
@@ -103,8 +108,8 @@ dae::Minigin::Minigin(const std::string& dataPath)
 	if (g_window == nullptr)
 	{
 		if (mixerInitialized) Mix_CloseAudio();
+		ServiceLocator::Shutdown();
 		SDL_Quit();
-		ServiceLocator::Shutdown(); 
 		throw std::runtime_error(std::string("SDL_CreateWindow Error: ") + SDL_GetError());
 	}
 
@@ -114,16 +119,22 @@ dae::Minigin::Minigin(const std::string& dataPath)
 
 dae::Minigin::~Minigin()
 {
-	ServiceLocator::Shutdown();
 
+	m_pGameStateMachine.reset();
+
+	ServiceLocator::Shutdown();
 	Renderer::GetInstance().Destroy();
 	SDL_DestroyWindow(g_window);
+
 	if (g_window)
 	{
 		SDL_DestroyWindow(g_window);
 		g_window = nullptr;
 		std::cout << "SDL Window destroyed.\n";
 	}
+
+	Mix_CloseAudio();
+	while (Mix_Init(0)) Mix_Quit();
 
 	SDL_Quit();
 }
@@ -132,29 +143,73 @@ void dae::Minigin::Run(const std::function<void()>& load)
 {
 	load();
 
-	auto& renderer = Renderer::GetInstance();
+	if (!m_pGameStateMachine || m_pGameStateMachine->IsStackEmpty())
+	{
+		std::cerr << "No initial game state set!" << std::endl;
+		return;
+	}
+
 	auto& sceneManager = SceneManager::GetInstance();
+    auto& renderer = Renderer::GetInstance();
 	auto& input = InputManager::GetInstance();
 	auto& time = Time::GetInstance();
 
 	bool doContinue = true; // Quits Game
-	const double ms_per_frame = 16.67; // 60 FPS
 
 	while (doContinue)
 	{
 		time.Update(); // Update delta time
 
-		doContinue = input.ProcessInput();
+		// SDL event polling
+		SDL_Event e;
+		bool sdlWantsQuit = false;
 
+		while (SDL_PollEvent(&e)) 
+		{
+			if (e.type == SDL_QUIT) 
+			{
+				sdlWantsQuit = true;
+			}
+			// For ImGui
+			ImGui_ImplSDL2_ProcessEvent(&e); 
+		}
+
+		if (sdlWantsQuit || (m_pGameStateMachine && m_pGameStateMachine->WantsToQuit())) 
+		{
+			doContinue = false;
+			continue;
+		}
+
+		// Handle input and update
+		if (m_pGameStateMachine) 
+		{
+			m_pGameStateMachine->HandleInput();
+			m_pGameStateMachine->Update(static_cast<float>(time.GetDeltaTime()));
+		}
+		input.ProcessInput();
 		sceneManager.Update();
 		sceneManager.LateUpdate();
 
+		// Handle render
 		renderer.Render();
+		if (m_pGameStateMachine) 
+		{
+			m_pGameStateMachine->Render(); 
+		}
 
+		const double ms_per_frame = 16.67; // 60 FPS
 		const auto sleepTime = std::chrono::milliseconds(static_cast<int>(ms_per_frame)) -
 			std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - time.GetInstance().GetLastTime());
 
 		if (sleepTime.count() > 0)
 			std::this_thread::sleep_for(sleepTime);
+	}
+}
+
+void dae::Minigin::SetInitialGameState(std::unique_ptr<GameState> state)
+{
+	if (m_pGameStateMachine && state)
+	{
+		m_pGameStateMachine->SetState(std::move(state));
 	}
 }

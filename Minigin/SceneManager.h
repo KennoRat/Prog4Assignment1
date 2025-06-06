@@ -7,6 +7,7 @@
 namespace dae
 {
 	class Scene;
+
 	class SceneManager final : public Singleton<SceneManager>
 	{
 	public:
@@ -19,7 +20,11 @@ namespace dae
 		SceneManager& operator=(const SceneManager& other) = delete;
 		SceneManager& operator=(SceneManager&& other) = delete;
 
-		Scene& CreateScene(const std::string& name);
+		std::shared_ptr<Scene> CreateScene(const std::string& name);
+		void RemoveScene(const std::string& name);
+		bool SetActiveScene(const std::string& name);
+		Scene* GetActiveScene() const;
+		std::shared_ptr<Scene> GetSceneByName(const std::string& name);
 
 		void Update();
 		void LateUpdate();
@@ -27,8 +32,11 @@ namespace dae
 		void RenderImGui();
 
 	private:
+
 		friend class Singleton<SceneManager>;
 		SceneManager() = default;
+
 		std::vector<std::shared_ptr<Scene>> m_scenes;
+		Scene* m_pActiveScene{ nullptr };
 	};
 }
