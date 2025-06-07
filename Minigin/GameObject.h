@@ -69,6 +69,7 @@ namespace dae
 		std::vector<BaseComponent*> m_componentsToBeDeleted;
 	};
 
+	//Template functions
 	template <typename GC>
 	GC* GameObject::GetComponent() const
 	{
@@ -83,8 +84,6 @@ namespace dae
 		return nullptr;
 	}
 
-
-	//Template functions
 	template<typename RC>
 	inline void GameObject::RemoveComponent()
 	{

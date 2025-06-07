@@ -18,6 +18,7 @@ public:
 
     void OnEnter(dae::GameStateMachine* pStateMachine) override;
     void OnExit(dae::GameStateMachine* pStateMachine) override;
+    void ResetKeybindings() override;
 
     dae::StateTransition HandleInput() override;
     dae::StateTransition Update(float deltaTime) override;
@@ -26,6 +27,7 @@ public:
 private:
 
     std::shared_ptr<dae::Scene> m_pGameScene; 
+    std::shared_ptr<dae::GameObject> m_pMissPacman;
     bool m_GameSceneLoaded{ false };
 
     void LoadGameScene(); 

@@ -164,6 +164,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="DieCommand.h" />
+    <ClInclude Include="DimOverlayComponent.h" />
     <ClInclude Include="FpsComponent.h" />
     <ClInclude Include="GainPointsCommand.h" />
     <ClInclude Include="LevelGridComponent.h" />
@@ -184,6 +185,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DieCommand.cpp" />
+    <ClCompile Include="DimOverlayComponent.cpp" />
     <ClCompile Include="FpsComponent.cpp" />
     <ClCompile Include="GainPointsCommand.cpp" />
     <ClCompile Include="LevelGridComponent.cpp" />

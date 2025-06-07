@@ -27,7 +27,7 @@
 // Observer
 #include "Subject.h"
 // States
-#include "PausedState.h"  
+#include "PausedState.h"   
 
 PlayingState::PlayingState() : m_pGameScene(nullptr), m_GameSceneLoaded(false)
 {
@@ -54,11 +54,41 @@ void PlayingState::OnEnter(dae::GameStateMachine* /*pStateMachine*/)
     {
         dae::SceneManager::GetInstance().SetActiveScene("GameScene");
     }
+
+    // Bind commands
+    auto& input = dae::InputManager::GetInstance();
+    input.ClearBindings();
+
+    input.BindKey(SDL_SCANCODE_W, dae::KeyState::Down, std::make_unique<dae::MoveCommand>(m_pMissPacman, dae::Direction::Up));
+    input.BindKey(SDL_SCANCODE_A, dae::KeyState::Down, std::make_unique<dae::MoveCommand>(m_pMissPacman, dae::Direction::Left));
+    input.BindKey(SDL_SCANCODE_D, dae::KeyState::Down, std::make_unique<dae::MoveCommand>(m_pMissPacman, dae::Direction::Right));
+    input.BindKey(SDL_SCANCODE_S, dae::KeyState::Down, std::make_unique<dae::MoveCommand>(m_pMissPacman, dae::Direction::Down));
 }
 
 void PlayingState::OnExit(dae::GameStateMachine* /*pStateMachine*/)
 {
     std::cout << "Exiting PlayingState" << std::endl;
+
+    UnloadGameScene();
+
+    // Unbind UI commands
+    auto& input = dae::InputManager::GetInstance();
+    input.UnbindKey(SDL_SCANCODE_W);
+    input.UnbindKey(SDL_SCANCODE_A);
+    input.UnbindKey(SDL_SCANCODE_D);
+    input.UnbindKey(SDL_SCANCODE_S);
+}
+
+void PlayingState::ResetKeybindings()
+{
+    // Bind commands
+    auto& input = dae::InputManager::GetInstance();
+    input.ClearBindings();
+
+    input.BindKey(SDL_SCANCODE_W, dae::KeyState::Down, std::make_unique<dae::MoveCommand>(m_pMissPacman, dae::Direction::Up));
+    input.BindKey(SDL_SCANCODE_A, dae::KeyState::Down, std::make_unique<dae::MoveCommand>(m_pMissPacman, dae::Direction::Left));
+    input.BindKey(SDL_SCANCODE_D, dae::KeyState::Down, std::make_unique<dae::MoveCommand>(m_pMissPacman, dae::Direction::Right));
+    input.BindKey(SDL_SCANCODE_S, dae::KeyState::Down, std::make_unique<dae::MoveCommand>(m_pMissPacman, dae::Direction::Down));
 }
 
 dae::StateTransition PlayingState::HandleInput()
@@ -67,6 +97,7 @@ dae::StateTransition PlayingState::HandleInput()
 
     if (input.IsKeyDownThisFrame(SDL_SCANCODE_ESCAPE)) 
     {
+        dae::SceneManager::GetInstance().PauseActiveScene(true);
         return dae::StateTransition(dae::TransitionType::Push, std::make_unique<PausedState>());
     }
 
@@ -132,33 +163,25 @@ void PlayingState::LoadGameScene()
     m_pGameScene->Add(displayScorePlayer1Object);
 
     //Make MsPacMan
-    auto missPacManObject = std::make_shared<dae::GameObject>();
-    auto pacTexture = std::make_unique<dae::RenderComponent>(missPacManObject, desiredTileSize * 0.9f, desiredTileSize * 0.9f);
+    m_pMissPacman = std::make_shared<dae::GameObject>();
+    auto pacTexture = std::make_unique<dae::RenderComponent>(m_pMissPacman, desiredTileSize * 0.9f, desiredTileSize * 0.9f);
     pacTexture->SetTexture("MissPacMan.png"); 
     // Pass the player-specific subjects to player components
-    auto livesComponent = std::make_unique<dae::LivesComponent>(missPacManObject, std::move(player1DieEvent), 3);
-    auto scoreComponent = std::make_unique<dae::ScoreComponent>(missPacManObject, std::move(player1GainPointsEvent));
+    auto livesComponent = std::make_unique<dae::LivesComponent>(m_pMissPacman, std::move(player1DieEvent), 3);
+    auto scoreComponent = std::make_unique<dae::ScoreComponent>(m_pMissPacman, std::move(player1GainPointsEvent));
     const float movementSpeedPlayer1 = 100.f;
-    auto movementComponent = std::make_unique<PlayerMovementComponent>(missPacManObject, levelObject, movementSpeedPlayer1);
+    auto movementComponent = std::make_unique<PlayerMovementComponent>(m_pMissPacman, levelObject, movementSpeedPlayer1);
 
-    missPacManObject->AddComponent(std::move(pacTexture));
-    missPacManObject->AddComponent(std::move(livesComponent));
-    missPacManObject->AddComponent(std::move(scoreComponent));
-    missPacManObject->AddComponent(std::move(movementComponent));
+    m_pMissPacman->AddComponent(std::move(pacTexture));
+    m_pMissPacman->AddComponent(std::move(livesComponent));
+    m_pMissPacman->AddComponent(std::move(scoreComponent));
+    m_pMissPacman->AddComponent(std::move(movementComponent));
 
-    auto* pMoveComp = missPacManObject->GetComponent<PlayerMovementComponent>();
+    auto* pMoveComp = m_pMissPacman->GetComponent<PlayerMovementComponent>();
     int startRow = 23; int startCol = 13; // Ms PacMan start
     if (pMoveComp) pMoveComp->SnapToGrid(startRow, startCol);
-    m_pGameScene->Add(missPacManObject);
+    m_pGameScene->Add(m_pMissPacman);
 
-    // To do: Switch to OnEnter and OnEXit
-    auto& input = dae::InputManager::GetInstance();
-    input.ClearBindings(); 
-
-    input.BindKey(SDL_SCANCODE_W, dae::KeyState::Down, std::make_unique<dae::MoveCommand>(missPacManObject, dae::Direction::Up));
-    input.BindKey(SDL_SCANCODE_A, dae::KeyState::Down, std::make_unique<dae::MoveCommand>(missPacManObject, dae::Direction::Left));
-    input.BindKey(SDL_SCANCODE_D, dae::KeyState::Down, std::make_unique<dae::MoveCommand>(missPacManObject, dae::Direction::Right));
-    input.BindKey(SDL_SCANCODE_S, dae::KeyState::Down, std::make_unique<dae::MoveCommand>(missPacManObject, dae::Direction::Down));
 }
 
 void PlayingState::UnloadGameScene()

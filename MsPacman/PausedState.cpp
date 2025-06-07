@@ -5,7 +5,8 @@
 // Engine Specific
 #include "GameStateMachine.h" 
 #include "InputManager.h"   
-#include "SceneManager.h"   
+#include "SceneManager.h"
+#include "Renderer.h"
 #include "Scene.h"
 #include "ResourceManager.h"
 #include "GameObject.h"     
@@ -14,6 +15,9 @@
 // Game Specific
 #include "MenuState.h"    
 #include "PlayingState.h" 
+#include "UINavigateCommand.h"
+#include "UIActivateCommand.h"
+#include "DimOverlayComponent.h"
 
 PausedState::PausedState()
 {
@@ -29,12 +33,27 @@ PausedState::~PausedState()
 void PausedState::OnEnter(dae::GameStateMachine* /*pStateMachine*/)
 {
     std::cout << "Entering PausedState" << std::endl;
+    m_pPauseScene = dae::SceneManager::GetInstance().GetSceneByName("PauseScene");
 
-    m_pPauseScene = dae::SceneManager::GetInstance().CreateScene("PauseScene");
+    if (!m_pPauseScene)
+    {
+        m_pPauseScene = dae::SceneManager::GetInstance().CreateScene("PauseScene");
+    }
 
-    CreateUI();
-    m_SelectedButtonIndex = PausedButtons::RESUME_BUTTON_INDEX;
-    HighlightSelectedButton();
+    if (m_pPauseScene)
+    {
+        //dae::SceneManager::GetInstance().SetActiveScene("PauseScene");
+        CreateUI();
+        m_SelectedButtonIndex = PausedButtons::RESUME_BUTTON_INDEX;
+        HighlightSelectedButton();
+
+        // Bind UI commands
+        auto& input = dae::InputManager::GetInstance();
+
+        input.BindKey(m_KeyUpBinding, dae::KeyState::Down, std::make_unique<UINavigateCommand>(GetStateMachine(), NavigationDirection::Up));
+        input.BindKey(m_KeyDownBinding, dae::KeyState::Down, std::make_unique<UINavigateCommand>(GetStateMachine(), NavigationDirection::Down));
+        input.BindKey(m_KeyActivateBinding, dae::KeyState::Down, std::make_unique<UIActivateCommand>(GetStateMachine()));
+    }    
 }
 
 void PausedState::OnExit(dae::GameStateMachine* /*pStateMachine*/)
@@ -47,6 +66,12 @@ void PausedState::OnExit(dae::GameStateMachine* /*pStateMachine*/)
         dae::SceneManager::GetInstance().RemoveScene("PauseScene");
         m_pPauseScene.reset();
     }
+
+    // Unbind UI commands
+    auto& input = dae::InputManager::GetInstance();
+    input.UnbindKey(m_KeyUpBinding);
+    input.UnbindKey(m_KeyDownBinding);
+    input.UnbindKey(m_KeyActivateBinding);
 }
 
 dae::StateTransition PausedState::HandleInput()
@@ -76,18 +101,36 @@ dae::StateTransition PausedState::HandleInput()
     //        return dae::StateTransition(dae::TransitionType::Set, std::make_unique<MenuState>());
     //    }
     //}
+
     return dae::StateTransition(dae::TransitionType::None);
 }
 
 dae::StateTransition PausedState::Update(float /*deltaTime*/)
 {
+    if (m_pPauseScene && m_IsUICreated) 
+    {
+        const auto& gameObjectsInPauseScene = m_pPauseScene->GetAllGameObjects();
+        for (const auto& go : gameObjectsInPauseScene) 
+        {
+            if (go) 
+            {
+                go->Update();
+            }
+        }
+    }
+
     return dae::StateTransition(dae::TransitionType::None);
+}
+
+void PausedState::ResetKeybindings()
+{
+    // Nothing to reset
 }
 
 void PausedState::Render() const
 {
     //  overlay render
-    if (m_pPauseScene) 
+   if (m_pPauseScene && m_IsUICreated)
     {
         const auto& gameObjectsInPauseScene = m_pPauseScene->GetAllGameObjects(); 
         for (const auto& go : gameObjectsInPauseScene) 
@@ -97,7 +140,7 @@ void PausedState::Render() const
                 go->Render(); 
             }
         }
-    }
+   }
 }
 
 void PausedState::CreateUI()
@@ -106,8 +149,21 @@ void PausedState::CreateUI()
     float buttonYStart = 300.0f;
     float buttonSpacing = 60.0f;
 
-    // To Do: Dimmed Background Overlay for Pause
-    auto dimOverlay = std::make_shared<dae::GameObject>();
+    // Dimmed Background Overlay
+    auto dimOverlayObject = std::make_shared<dae::GameObject>();
+    SDL_Color dimColor = { 0, 0, 0, 150 }; // 60% opacity
+    int screenWidth = 0;
+    int screenHeight = 0;
+    dae::Renderer::GetInstance().GetWindowDimensions(screenWidth, screenHeight);
+    auto dimComponent = std::make_unique<DimOverlayComponent>
+    (
+        dimOverlayObject,
+        dimColor,
+        static_cast<float>(screenWidth),
+        static_cast<float>(screenHeight)
+    );
+    dimOverlayObject->AddComponent(std::move(dimComponent));
+    m_pPauseScene->Add(dimOverlayObject);
 
     // Resume Button
     m_pResumeButtonObject = std::make_shared<dae::GameObject>();
@@ -132,6 +188,8 @@ void PausedState::CreateUI()
     titleObject->AddComponent(std::move(titleText));
     titleObject->SetLocalPosition(500, 100);
     if (m_pPauseScene) m_pPauseScene->Add(titleObject);
+
+    m_IsUICreated = true;
 }
 
 void PausedState::CleanupUI()
@@ -140,6 +198,8 @@ void PausedState::CleanupUI()
     m_pMenuButtonObject.reset();
     m_pResumeTextComponent = nullptr;
     m_pMenuTextComponent = nullptr;
+
+    m_IsUICreated = false;
 }
 
 void PausedState::HighlightSelectedButton()
@@ -165,7 +225,7 @@ void PausedState::SelectNextOption()
         % static_cast<int>(PausedButtons::TOTAL_PAUSED_BUTTONS));
 
     HighlightSelectedButton();
-    std::cout << "Menu: Selected next option: " << static_cast<int>(m_SelectedButtonIndex) << std::endl;
+    std::cout << "Paused: Selected next option: " << static_cast<int>(m_SelectedButtonIndex) << std::endl;
 }
 
 void PausedState::SelectPreviousOption()
@@ -174,12 +234,12 @@ void PausedState::SelectPreviousOption()
         % static_cast<int>(PausedButtons::TOTAL_PAUSED_BUTTONS));
 
     HighlightSelectedButton();
-    std::cout << "Menu: Selected previous option: " << static_cast<int>(m_SelectedButtonIndex) << std::endl;
+    std::cout << "Paused: Selected previous option: " << static_cast<int>(m_SelectedButtonIndex) << std::endl;
 }
 
 dae::StateTransition PausedState::ActivateSelectedOption()
 {
-    std::cout << "Menu: Activating selected option: " << static_cast<int>(m_SelectedButtonIndex) << std::endl;
+    std::cout << "Paused: Activating selected option: " << static_cast<int>(m_SelectedButtonIndex) << std::endl;
 
     if (m_SelectedButtonIndex == PausedButtons::RESUME_BUTTON_INDEX)
     {

@@ -23,6 +23,7 @@ namespace dae
 		std::shared_ptr<Scene> CreateScene(const std::string& name);
 		void RemoveScene(const std::string& name);
 		bool SetActiveScene(const std::string& name);
+		void PauseActiveScene(bool Pause);
 		Scene* GetActiveScene() const;
 		std::shared_ptr<Scene> GetSceneByName(const std::string& name);
 
@@ -38,5 +39,6 @@ namespace dae
 
 		std::vector<std::shared_ptr<Scene>> m_scenes;
 		Scene* m_pActiveScene{ nullptr };
+		bool m_PauseActiveScene{ false };
 	};
 }

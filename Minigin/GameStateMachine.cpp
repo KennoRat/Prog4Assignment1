@@ -39,7 +39,6 @@ namespace dae
 
     void GameStateMachine::PushState(std::unique_ptr<GameState> newState)
     {
-      
         if (newState)
         {
             newState->m_pStateMachine = this;
@@ -55,6 +54,7 @@ namespace dae
         {
             m_States.back()->OnExit(this);
             m_States.pop_back();
+            m_States.back()->ResetKeybindings();
             std::cout << "GameStateMachine: Popped state." << std::endl;
         }
     }

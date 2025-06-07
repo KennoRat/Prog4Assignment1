@@ -108,6 +108,11 @@ dae::StateTransition MenuState::Update(float /*deltaTime*/)
     return dae::StateTransition(dae::TransitionType::None);
 }
 
+void MenuState::ResetKeybindings()
+{
+    // Nothing to reset
+}
+
 void MenuState::Render() const
 {
     // SceneManager handles rendering for this state

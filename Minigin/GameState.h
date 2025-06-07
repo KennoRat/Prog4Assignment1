@@ -35,6 +35,7 @@ namespace dae
 
         virtual void OnEnter(GameStateMachine* pStateMachine) = 0;
         virtual void OnExit(GameStateMachine* pStateMachine) = 0;
+        virtual void ResetKeybindings() = 0;
 
         virtual StateTransition HandleInput() = 0;
         virtual StateTransition Update(float deltaTime) = 0;

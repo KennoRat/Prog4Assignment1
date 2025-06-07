@@ -96,7 +96,8 @@ dae::Minigin::Minigin(const std::string& dataPath)
 
 	m_pGameStateMachine = std::make_unique<GameStateMachine>();
 
-	g_window = SDL_CreateWindow(
+	g_window = SDL_CreateWindow
+	(
 		"Programming 4 assignment",
 		SDL_WINDOWPOS_CENTERED,
 		SDL_WINDOWPOS_CENTERED,
@@ -191,11 +192,12 @@ void dae::Minigin::Run(const std::function<void()>& load)
 		sceneManager.LateUpdate();
 
 		// Handle render
-		renderer.Render();
-		if (m_pGameStateMachine) 
+		renderer.BeginFrame();
+		if (m_pGameStateMachine)
 		{
-			m_pGameStateMachine->Render(); 
+			m_pGameStateMachine->Render();
 		}
+		renderer.EndFrame();
 
 		const double ms_per_frame = 16.67; // 60 FPS
 		const auto sleepTime = std::chrono::milliseconds(static_cast<int>(ms_per_frame)) -

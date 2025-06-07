@@ -37,25 +37,26 @@ void dae::Renderer::Init(SDL_Window* window)
 	
 }
 
-void dae::Renderer::Render() const
+void dae::Renderer::BeginFrame() const
 {
 	const auto& color = GetBackgroundColor();
 	SDL_SetRenderDrawColor(m_renderer, color.r, color.g, color.b, color.a);
 	SDL_RenderClear(m_renderer);
 
 	SceneManager::GetInstance().Render();
-	
-	//Render Imgui
+
+	// Start ImGui frame
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplSDL2_NewFrame();
 	ImGui::NewFrame();
+}
 
-	//ImGui::ShowDemoWindow();
+void dae::Renderer::EndFrame() const
+{
+	// Render ImGui draw data
 	SceneManager::GetInstance().RenderImGui();
-
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-	//end
 
 	SDL_RenderPresent(m_renderer);
 }
@@ -94,4 +95,37 @@ void dae::Renderer::RenderTexture(const Texture2D& texture, const float x, const
 	SDL_RenderCopy(GetSDLRenderer(), texture.GetSDLTexture(), nullptr, &dst);
 }
 
+void dae::Renderer::RenderFilledRect(float x, float y, float width, float height, SDL_Color color) const
+{
+	if (!m_renderer) return;
+
+	// Draw rect
+	SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderDrawColor(m_renderer, color.r, color.g, color.b, color.a);
+
+	SDL_Rect rect = 
+	{
+		static_cast<int>(x),
+		static_cast<int>(y),
+		static_cast<int>(width),
+		static_cast<int>(height)
+	};
+
+	SDL_RenderFillRect(m_renderer, &rect);
+}
+
 SDL_Renderer* dae::Renderer::GetSDLRenderer() const { return m_renderer; }
+
+void dae::Renderer::GetWindowDimensions(int& width, int& height) const
+{
+	if (m_window) 
+	{
+		SDL_GetWindowSize(m_window, &width, &height);
+	}
+	else
+	{
+		width = 0;
+		height = 0;
+	}
+}
+

@@ -20,7 +20,7 @@ TextComponent::~TextComponent()
 
 void TextComponent::Update()
 {
-	if (m_needsUpdate)
+	if (m_needsUpdate || !m_textTexture)
 	{
 		const SDL_Color color = { 255,255,255,255 }; // only white text is supported now
 		const auto surf = TTF_RenderText_Blended(m_font->GetFont(), m_text.c_str(), color);
@@ -41,6 +41,8 @@ void TextComponent::Update()
 
 void TextComponent::Render() const
 {
+	if (!m_textTexture) return;
+
 	const auto& pos = GetGameObject()->GetWorldPosition().GetPosition();
 	Renderer::GetInstance().RenderTexture(*m_textTexture, pos.x, pos.y);
 }

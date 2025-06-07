@@ -11,7 +11,7 @@ SceneManager::~SceneManager()
 
 void SceneManager::Update()
 {
-	if (m_pActiveScene)
+	if (m_pActiveScene && !m_PauseActiveScene)
 	{
 		m_pActiveScene->Update();
 	}
@@ -19,7 +19,7 @@ void SceneManager::Update()
 
 void SceneManager::LateUpdate()
 {
-	if (m_pActiveScene)
+	if (m_pActiveScene && !m_PauseActiveScene)
 	{
 		m_pActiveScene->LateUpdate();
 	}
@@ -105,6 +105,11 @@ bool SceneManager::SetActiveScene(const std::string& name)
 
 	m_pActiveScene = nullptr;
 	return false;
+}
+
+void dae::SceneManager::PauseActiveScene(bool Pause)
+{
+	m_PauseActiveScene = Pause;
 }
 
 Scene* SceneManager::GetActiveScene() const

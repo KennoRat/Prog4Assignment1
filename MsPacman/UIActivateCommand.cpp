@@ -1,6 +1,7 @@
 #include "UIActivateCommand.h"
 #include "GameState.h"
 #include "GameStateMachine.h"
+#include "SceneManager.h"
 #include <iostream>
 
 // Game States
@@ -38,10 +39,12 @@ void UIActivateCommand::Execute()
         if (selectedOption == PausedButtons::RESUME_BUTTON_INDEX)
         {
             gsm->PopState();
+            dae::SceneManager::GetInstance().PauseActiveScene(false);
         }
         else if (selectedOption == PausedButtons::MENU_BUTTON_INDEX)
         {
             gsm->SetState(std::make_unique<MenuState>());
+            dae::SceneManager::GetInstance().PauseActiveScene(false);
         }
     }
 }

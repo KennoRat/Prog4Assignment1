@@ -142,21 +142,22 @@ namespace dae
                 SoundRequest currentRequest;
                 bool requestAvailable = false;
 
-                std::unique_lock<std::mutex> lock(m_QueueMutex);
+                { // Set scope for lock
+                    std::unique_lock<std::mutex> lock(m_QueueMutex);
 
-                // Wait for queue request
-                m_QueueCondition.wait(lock, [this] { return !m_RequestQueue.empty() || m_StopThread.load(); });
+                    // Wait for queue request
+                    m_QueueCondition.wait(lock, [this] { return !m_RequestQueue.empty() || m_StopThread.load(); });
 
-                if (m_StopThread.load()) break;
+                    if (m_StopThread.load()) break;
 
-                if (!m_RequestQueue.empty())
-                {
-                    currentRequest = std::move(m_RequestQueue.front());
-                    m_RequestQueue.pop();
-                    requestAvailable = true;
-                }
-
-                // Process the request
+                    if (!m_RequestQueue.empty())
+                    {
+                        currentRequest = std::move(m_RequestQueue.front());
+                        m_RequestQueue.pop();
+                        requestAvailable = true;
+                    }
+                } // Destroy lock, release mutex
+                
                 if (requestAvailable)
                 {
                     ProcessRequest(currentRequest);
@@ -272,8 +273,9 @@ namespace dae
 
     SoundId SDLMixerAudioService::LoadSound(const std::string& filePath)
     {
-        // Basic check if path already loaded 
-        if (m_pImpl->m_SoundPathToId.count(filePath)) {
+        // Check if path already loaded 
+        if (m_pImpl->m_SoundPathToId.count(filePath))
+        {
             return m_pImpl->m_SoundPathToId[filePath];
         }
 
