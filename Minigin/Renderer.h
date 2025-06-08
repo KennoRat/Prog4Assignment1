@@ -18,8 +18,15 @@ namespace dae
 		void BeginFrame() const;
 		void EndFrame() const;
 
+		// Full texture
 		void RenderTexture(const Texture2D& texture, float x, float y) const;
 		void RenderTexture(const Texture2D& texture, float x, float y, float width, float height) const;
+
+		// Sprite Sheets
+		void RenderTextureSpriteSheet(const Texture2D& texture, float x, float y, const SDL_Rect& srcRect) const;
+		void RenderTextureSpriteSheet(const Texture2D& texture, float x, float y, float destWidth, float destHeight, const SDL_Rect& srcRect) const;
+
+		// Render Rect
 		void RenderFilledRect(float x, float y, float width, float height, SDL_Color color) const;
 
 		SDL_Renderer* GetSDLRenderer() const;

@@ -20,6 +20,7 @@
 #include "LivesComponent.h"
 #include "LevelGridComponent.h"
 #include "PlayerMovementComponent.h"
+#include "SpriteAnimationComponent.h"
 // Commands
 #include "MoveCommand.h"
 #include "DieCommand.h"
@@ -28,6 +29,7 @@
 #include "Subject.h"
 // States
 #include "PausedState.h"   
+
 
 PlayingState::PlayingState() : m_pGameScene(nullptr), m_GameSceneLoaded(false)
 {
@@ -140,6 +142,7 @@ void PlayingState::LoadGameScene()
     //Make UI Display for Player 1 (Lives & Score)
     auto displayLivesPlayer1Object = std::make_shared<dae::GameObject>();
     auto displayScorePlayer1Object = std::make_shared<dae::GameObject>();
+
     // Create subjects for events
     auto player1DieEvent = std::make_unique<dae::Subject>();
     auto player1GainPointsEvent = std::make_unique<dae::Subject>();
@@ -164,7 +167,7 @@ void PlayingState::LoadGameScene()
 
     //Make MsPacMan
     m_pMissPacman = std::make_shared<dae::GameObject>();
-    auto pacTexture = std::make_unique<dae::RenderComponent>(m_pMissPacman, desiredTileSize * 0.9f, desiredTileSize * 0.9f);
+    auto pacTexture = std::make_unique<dae::RenderComponent>(m_pMissPacman);
     pacTexture->SetTexture("MissPacMan.png"); 
     // Pass the player-specific subjects to player components
     auto livesComponent = std::make_unique<dae::LivesComponent>(m_pMissPacman, std::move(player1DieEvent), 3);
@@ -177,9 +180,22 @@ void PlayingState::LoadGameScene()
     m_pMissPacman->AddComponent(std::move(scoreComponent));
     m_pMissPacman->AddComponent(std::move(movementComponent));
 
+    // SpriteAnimationComponent
+    float fps = 10.0f;
+    int spriteWidth = 15;  
+    int spriteHeight = 15;
+    int framesPerDir = 3;
+    auto spriteAnimComponent = std::make_unique<SpriteAnimationComponent>
+    (
+        m_pMissPacman, fps, spriteWidth, spriteHeight, framesPerDir
+    );
+    
+    m_pMissPacman->AddComponent(std::move(spriteAnimComponent));
+
     auto* pMoveComp = m_pMissPacman->GetComponent<PlayerMovementComponent>();
     int startRow = 23; int startCol = 13; // Ms PacMan start
     if (pMoveComp) pMoveComp->SnapToGrid(startRow, startCol);
+
     m_pGameScene->Add(m_pMissPacman);
 
 }

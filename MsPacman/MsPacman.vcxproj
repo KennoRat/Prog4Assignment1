@@ -178,6 +178,7 @@
     <ClInclude Include="RotatorComponent.h" />
     <ClInclude Include="ScoreComponent.h" />
     <ClInclude Include="ScoreDisplayComponent.h" />
+    <ClInclude Include="SpriteAnimationComponent.h" />
     <ClInclude Include="ThrashTheCacheComponent.h" />
     <ClInclude Include="UIActivateCommand.h" />
     <ClInclude Include="UICommandBase.h" />
@@ -200,6 +201,7 @@
     <ClCompile Include="RotatorComponent.cpp" />
     <ClCompile Include="ScoreComponent.cpp" />
     <ClCompile Include="ScoreDisplayComponent.cpp" />
+    <ClCompile Include="SpriteAnimationComponent.cpp" />
     <ClCompile Include="ThrashTheCacheComponent.cpp" />
     <ClCompile Include="UIActivateCommand.cpp" />
     <ClCompile Include="UICommandBase.cpp" />

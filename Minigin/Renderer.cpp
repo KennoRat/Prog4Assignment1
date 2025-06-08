@@ -78,6 +78,8 @@ void dae::Renderer::Destroy()
 
 void dae::Renderer::RenderTexture(const Texture2D& texture, const float x, const float y) const
 {
+	if (!texture.GetSDLTexture()) return;
+
 	SDL_Rect dst{};
 	dst.x = static_cast<int>(x);
 	dst.y = static_cast<int>(y);
@@ -87,12 +89,40 @@ void dae::Renderer::RenderTexture(const Texture2D& texture, const float x, const
 
 void dae::Renderer::RenderTexture(const Texture2D& texture, const float x, const float y, const float width, const float height) const
 {
+	if (!texture.GetSDLTexture()) return;
+
 	SDL_Rect dst{};
 	dst.x = static_cast<int>(x);
 	dst.y = static_cast<int>(y);
 	dst.w = static_cast<int>(width);
 	dst.h = static_cast<int>(height);
 	SDL_RenderCopy(GetSDLRenderer(), texture.GetSDLTexture(), nullptr, &dst);
+}
+
+void dae::Renderer::RenderTextureSpriteSheet(const Texture2D& texture, float x, float y, const SDL_Rect& srcRect) const
+{
+	if (!texture.GetSDLTexture()) return;
+
+	SDL_Rect dstRect{};
+	dstRect.x = static_cast<int>(x);
+	dstRect.y = static_cast<int>(y);
+	dstRect.w = srcRect.w; 
+	dstRect.h = srcRect.h;
+
+	SDL_RenderCopy(GetSDLRenderer(), texture.GetSDLTexture(), &srcRect, &dstRect);
+}
+
+void dae::Renderer::RenderTextureSpriteSheet(const Texture2D& texture, float x, float y, float destWidth, float destHeight, const SDL_Rect& srcRect) const
+{
+	if (!texture.GetSDLTexture()) return;
+
+	SDL_Rect dstRect{};
+	dstRect.x = static_cast<int>(x);
+	dstRect.y = static_cast<int>(y);
+	dstRect.w = static_cast<int>(destWidth);
+	dstRect.h = static_cast<int>(destHeight);
+
+	SDL_RenderCopy(GetSDLRenderer(), texture.GetSDLTexture(), &srcRect, &dstRect);
 }
 
 void dae::Renderer::RenderFilledRect(float x, float y, float width, float height, SDL_Color color) const
