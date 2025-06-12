@@ -40,7 +40,7 @@ public:
 	void LoadLevel(const std::string& filepath);
 	void ClearTile(int row, int col);
 	TileType GetTileType(int row, int col) const;
-	bool IsWall(int row, int col) const;
+	bool IsWall(int row, int col, bool isGhost = false) const;
 	std::pair<int, int> WorldToGridCoords(float worldX, float worldy) const;
 	std::pair<int, int> GetTeleportDestination(TileType entranceType) const;
 	glm::vec2 GridToWorldCoords(int row, int col) const;

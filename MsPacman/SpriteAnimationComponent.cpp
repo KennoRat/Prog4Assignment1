@@ -88,8 +88,7 @@ void SpriteAnimationComponent::SetIsMoving(bool isMoving)
     if (m_IsMoving != isMoving) 
     {
         m_IsMoving = isMoving;
-        m_AnimationTimer = 0.f; // Reset timer
-
+        m_AnimationTimer = 0.f; 
         UpdateSourceRect();
     }
 }

@@ -221,9 +221,15 @@ TileType LevelGridComponent::GetTileType(int row, int col) const
     return m_mapGrid[row][col];
 }
 
-bool LevelGridComponent::IsWall(int row, int col) const
+bool LevelGridComponent::IsWall(int row, int col, bool isGhost) const
 {
     TileType type = GetTileType(row, col);
+
+    if(isGhost)
+    {
+        return type == TileType::Wall || type == TileType::Empty;
+    }
+
     return type == TileType::Wall || type == TileType::Empty || type == TileType::GhostSpawn;
 }
 

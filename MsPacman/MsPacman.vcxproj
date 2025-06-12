@@ -163,10 +163,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BaseGhostComponent.h" />
+    <ClInclude Include="BlinkyChaseBehaviour.h" />
     <ClInclude Include="DieCommand.h" />
     <ClInclude Include="DimOverlayComponent.h" />
     <ClInclude Include="FpsComponent.h" />
     <ClInclude Include="GainPointsCommand.h" />
+    <ClInclude Include="IGhostChaseBehaviour.h" />
     <ClInclude Include="LevelGridComponent.h" />
     <ClInclude Include="LivesComponent.h" />
     <ClInclude Include="LivesDisplayComponent.h" />
@@ -185,6 +188,8 @@
     <ClInclude Include="UINavigateCommand.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BaseGhostComponent.cpp" />
+    <ClCompile Include="BlinkyChaseBehaviour.cpp" />
     <ClCompile Include="DieCommand.cpp" />
     <ClCompile Include="DimOverlayComponent.cpp" />
     <ClCompile Include="FpsComponent.cpp" />

@@ -39,6 +39,8 @@ public:
 	dae::Direction GetCurrentDirection() const { return m_currentDirection; }
 	bool IsCurrentlyMoving() const { return m_isMoving; }
 	void SnapToGrid(int row, int col);
+	float GetSpriteRenderWidth() const { return m_spriteRenderWidth; }
+	float GetSpriteRenderHeight() const { return m_spriteRenderHeight; }
 
 private:
 

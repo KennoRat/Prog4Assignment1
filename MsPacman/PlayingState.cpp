@@ -21,6 +21,7 @@
 #include "LevelGridComponent.h"
 #include "PlayerMovementComponent.h"
 #include "SpriteAnimationComponent.h"
+#include "BaseGhostComponent.h"
 // Commands
 #include "MoveCommand.h"
 #include "DieCommand.h"
@@ -29,6 +30,8 @@
 #include "Subject.h"
 // States
 #include "PausedState.h"   
+
+#include "BlinkyChaseBehaviour.h"
 
 
 PlayingState::PlayingState() : m_pGameScene(nullptr), m_GameSceneLoaded(false)
@@ -122,7 +125,7 @@ void PlayingState::LoadGameScene()
 
     m_pGameScene = dae::SceneManager::GetInstance().CreateScene("GameScene");
 
-    //Make Background
+    // Make Background
     auto backgroundObject = std::make_shared<dae::GameObject>();
     auto textureComponent = std::make_unique<dae::RenderComponent>(backgroundObject, 1280.f, 720.f);
     textureComponent->SetTexture("background.tga"); 
@@ -139,7 +142,7 @@ void PlayingState::LoadGameScene()
     m_pGameScene->Add(levelObject);
 
     // Initialize Player
-    //Make UI Display for Player 1 (Lives & Score)
+    // Make UI Display for Player 1 (Lives & Score)
     auto displayLivesPlayer1Object = std::make_shared<dae::GameObject>();
     auto displayScorePlayer1Object = std::make_shared<dae::GameObject>();
 
@@ -165,7 +168,7 @@ void PlayingState::LoadGameScene()
     displayScorePlayer1Object->SetLocalPosition(10, 80);
     m_pGameScene->Add(displayScorePlayer1Object);
 
-    //Make MsPacMan
+    // Make MsPacMan
     m_pMissPacman = std::make_shared<dae::GameObject>();
     auto pacTexture = std::make_unique<dae::RenderComponent>(m_pMissPacman);
     pacTexture->SetTexture("MissPacMan.png"); 
@@ -180,7 +183,7 @@ void PlayingState::LoadGameScene()
     m_pMissPacman->AddComponent(std::move(scoreComponent));
     m_pMissPacman->AddComponent(std::move(movementComponent));
 
-    // SpriteAnimationComponent
+    // SpriteAnimationComponent MsPacMan
     float fps = 10.0f;
     int spriteWidth = 15;  
     int spriteHeight = 15;
@@ -195,6 +198,41 @@ void PlayingState::LoadGameScene()
     auto* pMoveComp = m_pMissPacman->GetComponent<PlayerMovementComponent>();
     int startRow = 23; int startCol = 13; // Ms PacMan start
     if (pMoveComp) pMoveComp->SnapToGrid(startRow, startCol);
+
+    // Make Blinky (Red Ghost)
+    auto blinkyObject = std::make_shared<dae::GameObject>();
+    auto blinkyRender = std::make_unique<dae::RenderComponent>(blinkyObject);
+    blinkyRender->SetTexture("GhostRed.png");
+    blinkyObject->AddComponent(std::move(blinkyRender));
+    framesPerDir = 2;
+    auto blinkyAnim = std::make_unique<SpriteAnimationComponent>
+    (
+        blinkyObject, fps, spriteWidth, spriteHeight, framesPerDir
+    );
+    blinkyObject->AddComponent(std::move(blinkyAnim));
+
+
+    // Add the specific Ghost Component
+    auto blinkyChase = std::make_unique<BlinkyChaseBehaviour>();
+    auto blinkyComp = std::make_unique<BaseGhostComponent>
+    (
+            blinkyObject,
+            levelObject,
+            m_pMissPacman,
+            std::move(blinkyChase), 
+            75.f, 50.f, 150.f,
+            0, 25
+    );
+
+    BaseGhostComponent* pBlinkyBaseComp = blinkyComp.get(); 
+    blinkyObject->AddComponent(std::move(blinkyComp));
+    m_pGameScene->Add(blinkyObject);
+
+    if (pBlinkyBaseComp)
+    {
+        pBlinkyBaseComp->Initialize();
+        pBlinkyBaseComp->SpawnAt(13, 13, GhostState::ExitingPen);
+    }
 
     m_pGameScene->Add(m_pMissPacman);
 
