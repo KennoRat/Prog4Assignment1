@@ -225,7 +225,7 @@ void GhostManagerComponent::Update()
     float deltaTime = static_cast<float>(dae::Time::GetInstance().GetDeltaTime());
 
     // Ghost Release Logic
-    if (m_NextGhostToReleaseIndex < m_GhostReleaseSchedule.size())
+    if (m_NextGhostToReleaseIndex < static_cast<int>(m_GhostReleaseSchedule.size()))
     {
         GhostReleaseInfo& nextGhostInfo = m_GhostReleaseSchedule[m_NextGhostToReleaseIndex];
 

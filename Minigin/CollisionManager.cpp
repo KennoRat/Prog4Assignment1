@@ -34,12 +34,12 @@ namespace dae
 
     void CollisionManager::CheckCollisions()
     {
-        for (int idxCollider = 0; idxCollider < m_Colliders.size(); ++idxCollider)
+        for (int idxCollider = 0; idxCollider < static_cast<int>(m_Colliders.size()); ++idxCollider)
         {
             ColliderComponent* pColliderA = m_Colliders[idxCollider];
             if (!pColliderA || !pColliderA->GetGameObject()) continue;
 
-            for (int idxOther = idxCollider + 1; idxOther < m_Colliders.size(); ++idxOther)
+            for (int idxOther = idxCollider + 1; idxOther < static_cast<int>(m_Colliders.size()); ++idxOther)
             {
                 ColliderComponent* pColliderB = m_Colliders[idxOther];
                 if (!pColliderB || !pColliderB->GetGameObject()) continue;

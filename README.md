@@ -1,18 +1,37 @@
-# Minigin
 
-Minigin is a very small project using [SDL2](https://www.libsdl.org/) and [glm](https://github.com/g-truc/glm) for 2D c++ game projects. It is in no way a game engine, only a barebone start project where everything sdl related has been set up. It contains glm for vector math, to aleviate the need to write custom vector and matrix classes.
+# Ms. Pac-Man C++ Project & Custom Game Engine for Programming 4 DAE EXAM
 
-[![Build Status](https://github.com/avadae/minigin/actions/workflows/msbuild.yml/badge.svg)](https://github.com/avadae/msbuild/actions)
-[![GitHub Release](https://img.shields.io/github/v/release/avadae/minigin?logo=github&sort=semver)](https://github.com/avadae/minigin/releases/latest)
+A C++ recreation of Ms. Pac-Man using a custom-built, component-based 2D game engine.
+[Link to Github project](https://github.com/KennoRat/Prog4_EngineExam_MissPacman.git)
 
-# Goal
+## Engine Core & Design
 
-Minigin can/may be used as a start project for the exam assignment in the course [Programming 4](https://youtu.be/j96Oh6vzhmg) at DAE. In that assignment students need to recreate a popular 80's arcade game with a game engine they need to program themselves. During the course we discuss several game programming patterns, using the book '[Game Programming Patterns](https://gameprogrammingpatterns.com/)' by [Robert Nystrom](https://github.com/munificent) as reading material. 
+*   **Component-Based Architecture:** Game logic and data are encapsulated in `Component`s (e.g., `RenderComponent`, `MovementComponent`, `ColliderComponent`) attached to `GameObject` entities.
+*   **SDL2 & Extensions:** Uses SDL2 for windowing, input, and 2D rendering, SDL_image for textures, SDL_ttf for fonts, and SDL_mixer for audio.
+*   **Service Locator:** Provides centralized access to global engine services like `InputManager` and `IAudioService`.
+*   **Threading for Audio:** The `SDLMixerAudioService` processes sound loading and playback requests on a dedicated thread.
+*   **PIMPL Idiom:** Applied to key engine classes (e.g., `ControllerInput`, `SDLMixerAudioService`) to hide third-party library dependencies (XInput, SDL_mixer) from public headers, reducing compile times and coupling.
 
-# Disclaimer
+## Key Game Programming & Design Patterns
 
-Minigin is, despite perhaps the suggestion in its name, **not** a game engine. It is just a very simple sdl2 ready project with some of the scaffolding in place to get started. None of the patterns discussed in the course are used yet (except singleton which use we challenge during the course). It is up to the students to implement their own vision for their engine, apply patterns as they see fit, create their game as efficient as possible.
+*   **Game Loop & Update Method:**
+    *   A standard game loop in `Minigin::Run` manages input, updates, and rendering.
+    *   `GameObject`s delegate `Update()` calls to their `Component`s, where specific per-frame logic resides. Delta time is used for consistent behavior.
+*   **Command Pattern:**
+    *   Decouples input events from actions. `InputManager` binds keyboard/controller inputs to `Command` objects (e.g., `MoveCommand`, `UINavigateCommand`).
+    *   States (like `MenuState`) dynamically bind and unbind UI-specific commands.
+*   **Observer Pattern & Event System:**
+    *   `Subject`s notify `Observer`s of `Event`s (identified by hashed IDs).
+    *   Used for game events like Ms. Pac-Man's death/respawn (`LivesComponent` as Subject, `BaseGhostComponent` & `PlayingState` as Observers) and power-up activation (`PowerPelletComponent` as Subject, `BaseGhostComponent` as Observer).
+*   **Component Pattern:** `GameObject`s are compositions of `BaseComponent` derivatives.
+*   **State Pattern (Class-Based):**
+    *   Manages overall game flow (e.g., `MenuState`, `PlayingState`, `PausedState`).
+    *   `GameStateMachine` controls transitions between `GameState` implementations. States handle their own specific input, logic, UI, and active scene management. Transitions are signaled via a `StateTransition` struct.
 
-# Use
+## Game Specifics
 
-Either download the latest release of this project and compile/run in visual studio or, since students need to have their work on github too, they can use this repository as a template (see the "Use this template" button at the top right corner). There is no point in forking this project.
+*   **Level System:** Levels are loaded from CSV files via `LevelGridComponent`, which also tracks pellets.
+*   **Ms. Pac-Man & Ghosts:** Player and enemy behaviors are implemented using specialized components (`PlayerMovementComponent`, `BaseGhostComponent`).
+*   **Ghost AI:** Ghosts use a state machine (`GhostState`) and compositional `IGhostChaseBehaviour` strategies (e.g., `BlinkyChaseBehaviour`, `PinkyChaseBehaviour`) for unique targeting during their Chase state.
+*   **Collision Detection:** A `CollisionManager` checks for overlaps between `ColliderComponent`s, triggering callbacks for game interactions like Ms. Pac-Man dying or eating a frightened ghost.
+
