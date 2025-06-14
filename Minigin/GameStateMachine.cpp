@@ -1,4 +1,5 @@
 #include "GameStateMachine.h"
+#include "CollisionManager.h"
 #include <cassert> 
 
 namespace dae

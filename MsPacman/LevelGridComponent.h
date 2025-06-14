@@ -38,7 +38,7 @@ public:
 	virtual void RenderImGui() override;
 
 	void LoadLevel(const std::string& filepath);
-	void ClearTile(int row, int col);
+	void ClearTileAndDecrementPellet(int row, int col);
 	TileType GetTileType(int row, int col) const;
 	bool IsWall(int row, int col, bool isGhost = false) const;
 	std::pair<int, int> WorldToGridCoords(float worldX, float worldy) const;
@@ -49,14 +49,19 @@ public:
 	float GetTileSize() const { return m_tileSize; }
 	int GetRows() const { return static_cast<int>(m_gridRows); }
 	int GetCols() const { return static_cast<int>(m_gridCols); }
+	int GetRemainingPellets() const { return m_remainingPellets; }
+	bool AreAllPelletsEaten() const { return m_remainingPellets <= 0 && m_totalPellets > 0; }
 
 private:
 	void FindAndStoreTunnelEndpoints();
+	void CountInitialPellets();
 
 	std::vector<std::vector<TileType>> m_mapGrid{};
 	int m_gridCols{};
 	int m_gridRows{};
 	float m_tileSize{};
+	int m_totalPellets{ 0 };
+	int m_remainingPellets{ 0 };
 
 	std::pair<int, int> m_tp1LeftCoord{};
 	std::pair<int, int> m_tp1RightCoord{};

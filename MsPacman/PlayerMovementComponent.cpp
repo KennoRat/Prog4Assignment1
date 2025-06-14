@@ -11,6 +11,7 @@
 // Game
 #include "LevelGridComponent.h"
 #include "ScoreComponent.h" 
+#include "PowerPelletComponent.h"
 
 namespace Sounds 
 {
@@ -66,7 +67,7 @@ void PlayerMovementComponent::Initialize()
     // Load Sounds 
     if (Sounds::PELLET_EAT_SOUND == dae::INVALID_SOUND_ID)
     {
-        std::string pelletSoundPath = "../Data/Sounds/pacman_chomp.wav";
+        std::string pelletSoundPath = "../Data/Sounds/ms_eat_dot.wav";
         Sounds::PELLET_EAT_SOUND = dae::ServiceLocator::GetAudioService().LoadSound(pelletSoundPath);
         if (Sounds::PELLET_EAT_SOUND == dae::INVALID_SOUND_ID) 
         {
@@ -97,6 +98,8 @@ void PlayerMovementComponent::Initialize()
 
 void PlayerMovementComponent::Update()
 {
+    if (!m_isActive) return;
+
     const float deltaTime = static_cast<float>(dae::Time::GetInstance().GetDeltaTime());
     if (deltaTime <= 0.f) return; // Avoid zero
 
@@ -375,7 +378,7 @@ void PlayerMovementComponent::HandleTileReached(int tileRow, int tileCol)
     // Check for Pellets
     if (currentTile == TileType::Pellet)
     {
-        m_pLevelGridCache->ClearTile(tileRow, tileCol);
+        m_pLevelGridCache->ClearTileAndDecrementPellet(tileRow, tileCol);
 
         if (m_pScoreComponentCache) m_pScoreComponentCache->GainPoints(PELLET_SCORE);
 
@@ -383,11 +386,17 @@ void PlayerMovementComponent::HandleTileReached(int tileRow, int tileCol)
     }
     else if (currentTile == TileType::PowerPellet)
     {
-        m_pLevelGridCache->ClearTile(tileRow, tileCol);
+        m_pLevelGridCache->ClearTileAndDecrementPellet(tileRow, tileCol);
 
         if (m_pScoreComponentCache) m_pScoreComponentCache->GainPoints(POWER_PELLET_SCORE);
 
         dae::ServiceLocator::GetAudioService().PlaySound(Sounds::POWER_PELLET_EAT_SOUND, 0.8f);
+
+        auto powerComp = GetGameObject()->GetComponent<PowerPelletComponent>();
+        if (powerComp)
+        {
+            powerComp->ActivatePowerUp();
+        }
     }
 
     // Check for Tunnel Wrapping

@@ -186,18 +186,20 @@ void LevelGridComponent::LoadLevel(const std::string& filepath)
         throw std::runtime_error("Error: Level file is empty or invalid: " + filepath);
     }
 
+    CountInitialPellets();
     FindAndStoreTunnelEndpoints();
 
     std::cout << "Level loaded: " << m_gridCols << "x" << m_gridRows << std::endl;
 }
 
-void LevelGridComponent::ClearTile(int row, int col)
+void LevelGridComponent::ClearTileAndDecrementPellet(int row, int col)
 {
     // Check if Pacman eats pellet
     if (row >= 0 && row < m_gridRows && col >= 0 && col < m_gridCols)
     {
         if (m_mapGrid[row][col] == TileType::Pellet || m_mapGrid[row][col] == TileType::PowerPellet)
         {
+            m_remainingPellets--;
             m_mapGrid[row][col] = TileType::Path;
         }
     }
@@ -294,6 +296,25 @@ void LevelGridComponent::FindAndStoreTunnelEndpoints()
             }
         }
     }
+}
+
+void LevelGridComponent::CountInitialPellets()
+{
+    m_totalPellets = 0;
+
+    for (int r = 0; r < m_gridRows; ++r)
+    {
+        for (int c = 0; c < m_gridCols; ++c)
+        {
+            if (m_mapGrid[r][c] == TileType::Pellet || m_mapGrid[r][c] == TileType::PowerPellet)
+            {
+                m_totalPellets++;
+            }
+        }
+    }
+    m_remainingPellets = m_totalPellets;
+
+    std::cout << "LevelGrid: Initialized with " << m_totalPellets << " total pellets." << std::endl;
 }
 
 

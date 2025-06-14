@@ -25,7 +25,7 @@ void RenderComponent::Update()
 
 void RenderComponent::Render() const
 {
-	if (!m_pTexture)
+    if (!m_pTexture || !m_isVisible)
 	{
 		return;
 	}
@@ -105,4 +105,9 @@ void RenderComponent::SetRenderDimensions(float width, float height)
 {
     m_renderWidth = width;
     m_renderHeight = height;
+}
+
+void RenderComponent::SetVisible(bool visible)
+{
+    m_isVisible = visible;
 }

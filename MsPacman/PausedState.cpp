@@ -72,6 +72,7 @@ void PausedState::OnExit(dae::GameStateMachine* /*pStateMachine*/)
     input.UnbindKey(m_KeyUpBinding);
     input.UnbindKey(m_KeyDownBinding);
     input.UnbindKey(m_KeyActivateBinding);
+    input.ClearBindings();
 }
 
 dae::StateTransition PausedState::HandleInput()

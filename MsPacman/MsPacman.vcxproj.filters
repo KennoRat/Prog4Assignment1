@@ -31,6 +31,12 @@
     <Filter Include="Source Files\States">
       <UniqueIdentifier>{5fc0942f-a8d4-448c-b8d1-db82919204c7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Chases">
+      <UniqueIdentifier>{7918a49b-b48a-49ec-9845-0dc57a30b7ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Chases">
+      <UniqueIdentifier>{015232e1-5701-4b9b-8ee3-c893d0ce8ca6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MoveCommand.h">
@@ -96,11 +102,38 @@
     <ClInclude Include="BaseGhostComponent.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
-    <ClInclude Include="IGhostChaseBehaviour.h">
+    <ClInclude Include="GameEvents.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BlinkyChaseBehaviour.h">
+    <ClInclude Include="GhostSpriteAnimationComponent.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="PowerPelletComponent.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="GhostState.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GhostManagerComponent.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="PinkyChaseBehaviour.h">
+      <Filter>Header Files\Chases</Filter>
+    </ClInclude>
+    <ClInclude Include="IGhostChaseBehaviour.h">
+      <Filter>Header Files\Chases</Filter>
+    </ClInclude>
+    <ClInclude Include="BlinkyChaseBehaviour.h">
+      <Filter>Header Files\Chases</Filter>
+    </ClInclude>
+    <ClInclude Include="InkyChaseBehaviour.h">
+      <Filter>Header Files\Chases</Filter>
+    </ClInclude>
+    <ClInclude Include="SueChaseBehaviour.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="SetGoNextLevelCommand.h">
+      <Filter>Header Files\Commands</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -170,8 +203,29 @@
     <ClCompile Include="BaseGhostComponent.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
+    <ClCompile Include="PowerPelletComponent.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="GhostSpriteAnimationComponent.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="GhostManagerComponent.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
     <ClCompile Include="BlinkyChaseBehaviour.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Chases</Filter>
+    </ClCompile>
+    <ClCompile Include="PinkyChaseBehaviour.cpp">
+      <Filter>Source Files\Chases</Filter>
+    </ClCompile>
+    <ClCompile Include="InkyChaseBehaviour.cpp">
+      <Filter>Source Files\Chases</Filter>
+    </ClCompile>
+    <ClCompile Include="SueChaseBehaviour.cpp">
+      <Filter>Source Files\Chases</Filter>
+    </ClCompile>
+    <ClCompile Include="SetGoNextLevelCommand.cpp">
+      <Filter>Source Files\Commands</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

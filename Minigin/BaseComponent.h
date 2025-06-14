@@ -8,6 +8,7 @@ namespace dae
 	class BaseComponent // Base class for all components
 	{
 	public:
+
 		//Destructor
 		virtual ~BaseComponent() = default;
 		//Rule Of Five
@@ -21,11 +22,15 @@ namespace dae
 		virtual void RenderImGui() = 0;
 
 		GameObject* GetGameObject() const { return m_gameObjectPtr; }
+
 	protected:
+
 		//Constructor
 		explicit BaseComponent(GameObject& gameObject)
-			: m_gameObjectPtr(&gameObject) {};
+		: m_gameObjectPtr(&gameObject) {};
+
 	private:
+
 		GameObject* m_gameObjectPtr;
 	};
 }

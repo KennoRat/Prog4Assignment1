@@ -9,12 +9,17 @@
 #include "GameObject.h"          
 #include "RenderComponent.h"      
 #include "TimeGameEngine.h"
+#include "Event.h" 
+#include "Subject.h"
 
 // Game
 #include "PlayerMovementComponent.h"
 #include "LevelGridComponent.h"   
 #include "IGhostChaseBehaviour.h"
-#include "SpriteAnimationComponent.h"
+#include "GhostSpriteAnimationComponent.h"
+#include "GameEvents.h"
+#include "LivesComponent.h"
+#include "PowerPelletComponent.h"
 
 dae::Direction GetOppositeDirection(dae::Direction dir);
 glm::ivec2 DirectionToVec2(dae::Direction dir);
@@ -39,6 +44,33 @@ BaseGhostComponent::BaseGhostComponent(std::shared_ptr<dae::GameObject> owner,
     if (!m_pChaseBehaviour) throw std::runtime_error("BaseGhostComponent requires a chase behaviour.");
 
     m_currentSpeed = m_normalSpeed;
+}
+
+BaseGhostComponent::~BaseGhostComponent()
+{
+    if (m_pPacmanObject && m_isInitialized)
+    { 
+        auto* pacmanLivesComp = m_pPacmanObject->GetComponent<dae::LivesComponent>();
+
+        if (pacmanLivesComp)
+        {
+            if (pacmanLivesComp->GetDeathSubject())
+            {
+                pacmanLivesComp->GetDeathSubject()->RemoveObserver(this);
+            }
+            if (pacmanLivesComp->GetRespawnSubject())
+            {
+                pacmanLivesComp->GetRespawnSubject()->RemoveObserver(this);
+            }
+        }
+
+        auto* pacmanPowerComp = m_pPacmanObject->GetComponent<PowerPelletComponent>();
+
+        if (pacmanPowerComp && pacmanPowerComp->GetPowerUpSubject())
+        {
+            pacmanPowerComp->GetPowerUpSubject()->RemoveObserver(this);
+        }
+    }
 }
 
 void BaseGhostComponent::Initialize()
@@ -68,23 +100,49 @@ void BaseGhostComponent::Initialize()
         throw std::runtime_error("Ghost GameObject is missing RenderComponent.");
     }
 
-    m_pSpriteAnimationComponentCache = GetGameObject()->GetComponent<SpriteAnimationComponent>();
+    m_pSpriteAnimationComponentCache = GetGameObject()->GetComponent<GhostSpriteAnimationComponent>();
     if (!m_pSpriteAnimationComponentCache) 
     {
-        std::cout << "BaseGhostComponent Warning: Ghost GameObject,is missing SpriteAnimationComponent.\n";
+        std::cout << "BaseGhostComponent Warning: Ghost GameObject is missing GhostSpriteAnimationComponent.\n";
+    }
+    m_pSpriteAnimationComponentCache->SetVisualState(m_currentState);
+
+    if (m_pPacmanObject) 
+    {
+        auto* pacmanLivesComp = m_pPacmanObject->GetComponent<dae::LivesComponent>();
+
+        if (pacmanLivesComp)
+        {
+
+            if (pacmanLivesComp->GetDeathSubject())
+            {
+                pacmanLivesComp->GetDeathSubject()->AddObserver(this);
+            }
+            if (pacmanLivesComp->GetRespawnSubject())
+            {
+                pacmanLivesComp->GetRespawnSubject()->AddObserver(this);
+            }
+        }
+
+        auto* pacmanPowerComp = m_pPacmanObject->GetComponent<PowerPelletComponent>();
+
+        if (pacmanPowerComp && pacmanPowerComp->GetPowerUpSubject())
+        {
+            pacmanPowerComp->GetPowerUpSubject()->AddObserver(this);
+            //std::cout << GetGameObject()->GetTag() << " observing PowerUpActivated." << std::endl;
+        }
     }
 
     const auto initialWorldPos = GetGameObject()->GetWorldPosition().GetPosition();
     glm::ivec2 initialGridPos = WorldToGrid(initialWorldPos + glm::vec3(m_spriteRenderWidth / 2.f, m_spriteRenderHeight / 2.f, 0.f));
     m_targetWorldPos = AdjustPositionForSpriteCenter(GridToWorldCenter(initialGridPos));
 
-
     if (m_currentState == GhostState::Idle && m_currentSpeed == 0.f && !m_isMoving)
     { 
         SetState(GhostState::Scatter);
     }
 
-
+    m_isActive = true;
     m_isInitialized = true;
 }
 
@@ -129,6 +187,11 @@ void BaseGhostComponent::Update()
         Initialize();
     }
 
+    if (!m_isActive) 
+    { 
+        return;
+    }
+
     float deltaTime = static_cast<float>(dae::Time::GetInstance().GetDeltaTime());
     if (deltaTime <= 0.f) return;
 
@@ -136,12 +199,11 @@ void BaseGhostComponent::Update()
     HandleStateTransitions();
     UpdateMovement(deltaTime);
 
-     if (m_pSpriteAnimationComponentCache) 
-     {
-         m_pSpriteAnimationComponentCache->SetDirection(m_currentDir);
-         m_pSpriteAnimationComponentCache->SetIsMoving(m_isMoving);
-         // To do: add frightened and eaten sprites
-     }
+    if (m_pSpriteAnimationComponentCache)
+    {
+        m_pSpriteAnimationComponentCache->SetMovementDirection(m_currentDir);
+        m_pSpriteAnimationComponentCache->SetIsMoving(m_isMoving);
+    }
 }
 
 void BaseGhostComponent::UpdateMovement(float deltaTime) 
@@ -170,7 +232,7 @@ void BaseGhostComponent::UpdateMovement(float deltaTime)
         m_currentTargetGridPos = GetEatenTarget();
         break;
     case GhostState::Idle:
-        m_isMoving = false;
+        m_currentTargetGridPos = GetEatenTarget();
         return;
     case GhostState::ExitingPen:
         m_currentTargetGridPos = GetPenExitTarget();
@@ -410,6 +472,11 @@ void BaseGhostComponent::SetState(GhostState newState)
     m_stateTimer = 0.f; 
     m_justReversed = true;
 
+    if (m_pSpriteAnimationComponentCache)
+    {
+        m_pSpriteAnimationComponentCache->SetVisualState(newState);
+    }
+
     switch (m_currentState) 
     {
     case GhostState::Scatter:
@@ -444,8 +511,6 @@ void BaseGhostComponent::SetState(GhostState newState)
 
         m_currentSpeed = m_eatenSpeed;
         m_isMoving = true;
-
-        // To do: Visuals change to eyes
 
         break;
     case GhostState::Idle:
@@ -540,7 +605,7 @@ glm::vec2 BaseGhostComponent::AdjustPositionForSpriteCenter(glm::vec2 targetCent
 
 void BaseGhostComponent::RenderImGui() {
 
-    std::string name = "Ghost";
+    std::string name = "Ghost:" + GetGameObject()->GetTag();
 
     if (ImGui::TreeNode(name.c_str())) 
     {
@@ -551,6 +616,51 @@ void BaseGhostComponent::RenderImGui() {
         const auto pos = GetGameObject()->GetWorldPosition().GetPosition();
         ImGui::Text("World Pos TL: (%.1f, %.1f)", pos.x, pos.y);
         ImGui::TreePop();
+    }
+}
+
+void BaseGhostComponent::Notify(const dae::GameObject& /*gameObject*/, const dae::Event& event)
+{
+    if (!m_isInitialized) return;
+
+    if (event.id == EVENT_PLAYER_DIED)
+    {
+        m_isActive = false;
+        m_isMoving = false;
+        m_currentState = GhostState::Eaten;
+
+        if (m_pRenderComponentCache)
+        {
+            m_pRenderComponentCache->SetVisible(false);
+        }
+    }
+    else if (event.id == EVENT_PLAYER_RESPAWNED)
+    {
+        if (m_pRenderComponentCache)
+        {
+            m_pRenderComponentCache->SetVisible(true);
+        }
+
+        m_isActive = true;
+        m_currentState = GhostState::Idle;
+
+        std::string tag = GetGameObject()->GetTag();
+        if (tag == "Blinky")
+        { 
+            SpawnAt(10, 13, GhostState::Scatter, dae::Direction::Left);
+        }
+        else if (tag == "Pinky")
+        {
+            SpawnAt(12, 13, GhostState::Idle, dae::Direction::Up);
+        }
+        else
+        {
+            SpawnAt(m_homeCornerGridPos.y, m_homeCornerGridPos.x, GhostState::Idle);
+        }
+    }
+    else if (event.id == EVENT_POWER_UP_ACTIVATED) 
+    {
+        Frighten();
     }
 }
 

@@ -20,7 +20,8 @@
 #include "TimeGameEngine.h"
 #include "ServiceLocator.h" 
 #include "SDLMixerAudioService.h"
-#include "GameStateMachine.h" 
+#include "GameStateMachine.h"
+#include "CollisionManager.h"
 #include "backends/imgui_impl_sdl2.h"
 
 SDL_Window* g_window{};
@@ -154,6 +155,7 @@ void dae::Minigin::Run(const std::function<void()>& load)
     auto& renderer = Renderer::GetInstance();
 	auto& input = InputManager::GetInstance();
 	auto& time = Time::GetInstance();
+	auto& collisionManager = CollisionManager::GetInstance();
 
 	bool doContinue = true; // Quits Game
 
@@ -191,6 +193,8 @@ void dae::Minigin::Run(const std::function<void()>& load)
 		sceneManager.Update();
 		sceneManager.LateUpdate();
 
+		collisionManager.CheckCollisions();
+
 		// Handle render
 		renderer.BeginFrame();
 		if (m_pGameStateMachine)
@@ -206,6 +210,8 @@ void dae::Minigin::Run(const std::function<void()>& load)
 		if (sleepTime.count() > 0)
 			std::this_thread::sleep_for(sleepTime);
 	}
+
+	collisionManager.ClearColliders();
 }
 
 void dae::Minigin::SetInitialGameState(std::unique_ptr<GameState> state)

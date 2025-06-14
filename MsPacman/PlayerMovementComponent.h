@@ -36,6 +36,7 @@ public:
 	virtual void RenderImGui() override;
 
 	void SetDesiredDirection(dae::Direction dir);
+	void SetIsActive(bool active) { m_isActive = active; }
 	dae::Direction GetCurrentDirection() const { return m_currentDirection; }
 	bool IsCurrentlyMoving() const { return m_isMoving; }
 	void SnapToGrid(int row, int col);
@@ -66,6 +67,7 @@ private:
 	float m_spriteRenderHeight{ 0.f };
 	bool m_isMoving{ false };
 	bool m_initialized{ false };
+	bool m_isActive{ true };
 
 	const float m_tileCenterTolerance{ 1.5f }; // Pixels distance to allow turning
 };

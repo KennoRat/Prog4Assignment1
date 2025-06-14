@@ -41,6 +41,7 @@ namespace dae
 		float GetRenderHeight() const { return m_renderHeight; }
 
 		void SetRenderDimensions(float width, float height);
+		void SetVisible(bool visible);
 
 	private:
 
@@ -48,6 +49,7 @@ namespace dae
 
 		SDL_Rect m_sourceRect{ 0,0,0,0 };
 		bool m_useSourceRect{ false };
+		bool m_isVisible{ true };
 
 		float m_renderWidth{};
 		float m_renderHeight{};

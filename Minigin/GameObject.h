@@ -41,6 +41,8 @@ namespace dae
 		GameObject* GetParent() const;
 		GameObject* GetChildAt(int index) const;
 		std::vector<GameObject*> GetChildren() const;
+		void SetTag(const std::string& tag) { m_tag = tag; }
+		const std::string& GetTag() const { return m_tag; }
 
 		template <typename GC>
 		GC* GetComponent() const;
@@ -67,6 +69,7 @@ namespace dae
 
 		std::vector<std::unique_ptr<BaseComponent>> m_components;
 		std::vector<BaseComponent*> m_componentsToBeDeleted;
+		std::string m_tag{ "Default" };
 	};
 
 	//Template functions

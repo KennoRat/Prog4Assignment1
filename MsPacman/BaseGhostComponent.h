@@ -1,7 +1,9 @@
 #pragma once
-#include "BaseComponent.h" 
+#include "BaseComponent.h"
+#include "Observer.h"
 #include "LevelGridComponent.h" 
-#include "MoveCommand.h" 
+#include "MoveCommand.h"
+#include "GhostState.h"
 #include <glm.hpp>
 #include <memory>
 
@@ -12,20 +14,10 @@ namespace dae
     class RenderComponent;
 }
 class PlayerMovementComponent;
-class SpriteAnimationComponent;
+class GhostSpriteAnimationComponent;
 class IGhostChaseBehaviour;
 
-enum class GhostState
-{
-    Idle,         
-    Scatter,      
-    Chase,        
-    Frightened,   
-    Eaten,         
-    ExitingPen
-};
-
-class BaseGhostComponent final : public dae::BaseComponent
+class BaseGhostComponent final : public dae::BaseComponent, public dae::Observer
 {
 public:
     // Constructor
@@ -37,7 +29,7 @@ public:
         int homeCornerRow, int homeCornerCol);
 
     // Destructor
-    virtual ~BaseGhostComponent() = default;
+    virtual ~BaseGhostComponent() override;
 
     // Rule of Five 
     BaseGhostComponent(const BaseGhostComponent&) = delete;
@@ -49,6 +41,7 @@ public:
     virtual void Update() override;
     virtual void Render() const override {}
     virtual void RenderImGui() override;
+    virtual void Notify(const dae::GameObject& gameObject, const dae::Event& event) override;
 
     // State Management
     GhostState GetCurrentState() const { return m_currentState; }
@@ -60,7 +53,8 @@ public:
     void WasEaten();
     void SetNextDirection(dae::Direction direction);
     void SpawnAt(int gridRow, int gridCol, GhostState initialState = GhostState::Scatter, dae::Direction initialDir = dae::Direction::Left);
-    void Activate() { m_isActiveInPen = true; }
+    void Activate() { m_isActiveInPen = true; m_stateTimer = 0.f; }
+    void Deactivate() { m_isActiveInPen = false; }
 
     // Public Getters needed by Chase Behaviours
     std::shared_ptr<dae::GameObject> GetPacmanObject() const { return m_pPacmanObject; }
@@ -69,8 +63,9 @@ public:
     glm::ivec2 GetCurrentGridPosition() const;
     dae::Direction GetCurrentDirection() const { return m_currentDir; }
     glm::ivec2 GetScatterTarget() const { return m_homeCornerGridPos; }
-    glm::ivec2 GetPenExitTarget() const { return PEN_EXIT_TARGET; };
+    glm::ivec2 GetPenExitTarget() const { return PEN_EXIT_TARGET; }
     glm::ivec2 GetEatenTarget() const;
+    float GetFrightenTimeLeft() const { return m_frightenTimer; }
 
 private:
     // Private methods
@@ -84,7 +79,6 @@ private:
     void UpdateStateTimers(float deltaTime);
     void HandleStateTransitions();
 
-
     // Data
     std::unique_ptr<IGhostChaseBehaviour> m_pChaseBehaviour;
     std::shared_ptr<dae::GameObject> m_pLevelObject;
@@ -93,7 +87,7 @@ private:
     LevelGridComponent* m_pLevelGridCache{ nullptr };
     PlayerMovementComponent* m_pPacmanMovementCache{ nullptr };
     dae::RenderComponent* m_pRenderComponentCache{ nullptr };
-    SpriteAnimationComponent* m_pSpriteAnimationComponentCache{ nullptr };
+    GhostSpriteAnimationComponent* m_pSpriteAnimationComponentCache{ nullptr };
 
     GhostState m_currentState{ GhostState::Idle };
     GhostState m_previousState{ GhostState::Idle };
@@ -108,6 +102,7 @@ private:
     dae::Direction m_currentDir{ dae::Direction::Left };
     dae::Direction m_nextDir{};
 
+    bool m_isActive{ true };
     bool m_isMoving{ false };
     bool m_justReversed{ false };
     bool m_isActiveInPen{ false };

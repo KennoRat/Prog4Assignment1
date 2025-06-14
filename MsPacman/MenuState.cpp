@@ -8,12 +8,13 @@
 #include "ResourceManager.h"
 #include "GameObject.h"     
 #include "Scene.h"
-#include "TextComponent.h"    
+#include "TextComponent.h"
 
 // Game Specific
 #include "PlayingState.h" 
 #include "UINavigateCommand.h"
 #include "UIActivateCommand.h"
+
 
 MenuState::MenuState()
 {
@@ -70,6 +71,7 @@ void MenuState::OnExit(dae::GameStateMachine* /*pStateMachine*/)
     input.UnbindKey(m_KeyDownBinding);
     input.UnbindKey(m_KeyActivateBinding);
     //input.UnbindKey(SDL_SCANCODE_KP_ENTER);
+    input.ClearBindings();
 }
 
 dae::StateTransition MenuState::HandleInput()
